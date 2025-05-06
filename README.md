@@ -1,3 +1,27 @@
+# Demo Output
+
+```
+bun install
+bun index.ts
+
+----------------------------------------------------------------------------------------------
+| Test Case                               | Encrypted Size     | Duration (ms) | Status    |
+|-----------------------------------------|--------------------|---------------|-----------|
+| ECDH-ES Demo - 1MB                      |          1023.9 KB |        102.86 | ✅ SUCCESS |
+| RSA-OAEP Demo - 1MB                     |          1023.8 KB |         45.79 | ✅ SUCCESS |
+| ECDH-ES Demo - 1MB_GZIP                 |          174.07 KB |         19.25 | ✅ SUCCESS |
+| RSA-OAEP Demo - 1MB_GZIP                |           174.2 KB |         18.81 | ✅ SUCCESS |
+| ECDH-ES Demo - 10MB                     |              10 MB |        310.80 | ✅ SUCCESS |
+| RSA-OAEP Demo - 10MB                    |              10 MB |        265.66 | ✅ SUCCESS |
+| ECDH-ES Demo - 10MB_GZIP                |            1.69 MB |         65.91 | ✅ SUCCESS |
+| RSA-OAEP Demo - 10MB_GZIP               |            1.69 MB |         64.21 | ✅ SUCCESS |
+| ECDH-ES Demo - 20MB                     |              20 MB |        513.36 | ✅ SUCCESS |
+| RSA-OAEP Demo - 20MB                    |              20 MB |        500.01 | ✅ SUCCESS |
+| ECDH-ES Demo - 20MB_GZIP                |            3.39 MB |        104.24 | ✅ SUCCESS |
+| RSA-OAEP Demo - 20MB_GZIP               |            3.39 MB |        102.40 | ✅ SUCCESS |
+------------------------------------------------------------------------------------------------
+```
+
 # Optional End-to-End Encryption for FHIR Bulk Export
 
 **Protocol draft v0.5 – 6 May 2025**
