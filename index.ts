@@ -4,6 +4,8 @@ import sodium from 'libsodium-wrappers';
 // --- Constants ---
 const BULK_EXPORT_DECRYPTION_KEY_URL = "http://argo.run/bulk-export-decryption-key";
 const NDJSON_CIPHER_ALGORITHM = "secretstream_xchacha20poly1305";
+const DEFAULT_PLAINTEXT_CHUNK_SIZE = 1 * 1024 * 1024; // 1 MiB
+const DEFAULT_CONTENT_TYPE = "application/octet-stream"; // Default for this demo
 
 const SAMPLE_NDJSON_DATA = [
   { resourceType: "Patient", id: "123", name: [{ family: "Doe", given: ["John"] }] },
@@ -83,17 +85,25 @@ function generateCEK(): Uint8Array {
 
 async function wrapCEK(
   cek: Uint8Array,
-  clientPublicJwk: jose.JWK, // Server receives the public JWK
+  clientPublicJwk: jose.JWK, 
   jweAlg: 'ECDH-ES+A256KW' | 'RSA-OAEP-256',
+  plaintextChunkSize: number, // New parameter
+  contentType: string,        // New parameter
+  contentEncoding?: "gzip",   // New optional parameter
   jweEnc: 'A256GCM' = 'A256GCM'
 ): Promise<string> {
   console.log(`🛡️ Server: Wrapping CEK with client's public key using JWE (alg: ${jweAlg})...`);
-  const jwePayload = {
+  const jwePayload: { k: string; cipher: string; chunk: number; content_type: string; content_encoding?: string } = {
     k: jose.base64url.encode(cek),
     cipher: NDJSON_CIPHER_ALGORITHM,
+    chunk: plaintextChunkSize,
+    content_type: contentType,
   };
 
-  // Server imports the client's public JWK, specifying the JWE alg it will be used for
+  if (contentEncoding) {
+    jwePayload.content_encoding = contentEncoding;
+  }
+
   const clientPublicKeyForJWE = await jose.importJWK(clientPublicJwk, jweAlg); 
 
   const jwe = await new jose.CompactEncrypt(stringToUint8Array(JSON.stringify(jwePayload)))
@@ -156,17 +166,14 @@ function resolveManifestAndExtractJWE(manifest: any, fileType: string = "Patient
 
 async function unwrapCEK(
   jweCompact: string,
-  clientPrivateJwk: jose.JWK, // Expecting the private key as JWK
-  expectedJweAlg: 'ECDH-ES+A256KW' | 'RSA-OAEP-256' // Client knows what to expect
-): Promise<{ cek: Uint8Array; cipher: string } | null> {
+  clientPrivateJwk: jose.JWK, 
+  expectedJweAlg: 'ECDH-ES+A256KW' | 'RSA-OAEP-256'
+): Promise<{ cek: Uint8Array; cipher: string; plaintextChunkSize: number; contentType: string; contentEncoding?: "gzip" } | null> {
   console.log(`📄 Client: Unwrapping CEK from JWE (expecting alg: ${expectedJweAlg})...`);
   try {
-    // Client imports its own private JWK, specifying the JWE alg it's being used for
     const privateKeyForJWE = await jose.importJWK(clientPrivateJwk, expectedJweAlg);
-
     const { plaintext, protectedHeader } = await jose.compactDecrypt(jweCompact, privateKeyForJWE);
     
-    // Verify the JWE header alg matches what was expected/used for import
     if (protectedHeader.alg !== expectedJweAlg) {
         console.error(`📄 Client: JWE header algorithm mismatch! Expected ${expectedJweAlg}, got ${protectedHeader.alg}.`);
         return null;
@@ -174,8 +181,8 @@ async function unwrapCEK(
 
     const payload = JSON.parse(uint8ArrayToString(plaintext));
 
-    if (!payload.k || !payload.cipher) {
-      console.error("📄 Client: Invalid JWE payload structure after decryption.");
+    if (!payload.k || !payload.cipher || !payload.content_type) {
+      console.error("📄 Client: Invalid JWE payload structure after decryption (missing k, cipher, or content_type).");
       return null;
     }
     if (payload.cipher !== NDJSON_CIPHER_ALGORITHM) {
@@ -184,8 +191,16 @@ async function unwrapCEK(
     }
 
     const cek = jose.base64url.decode(payload.k);
-    console.log(`📄 Client: CEK successfully unwrapped (JWE alg: ${protectedHeader.alg}).`);
-    return { cek, cipher: payload.cipher };
+    const plaintextChunkSize = (typeof payload.chunk === 'number' && payload.chunk > 0) ? payload.chunk : DEFAULT_PLAINTEXT_CHUNK_SIZE;
+    const contentType = payload.content_type;
+    const contentEncoding = payload.content_encoding as ("gzip" | undefined);
+
+    if (typeof payload.chunk !== 'undefined' && (typeof payload.chunk !== 'number' || payload.chunk <= 0)) {
+        console.warn(`📄 Client: JWE payload had an invalid 'chunk' value (${payload.chunk}). Using default ${DEFAULT_PLAINTEXT_CHUNK_SIZE}.`);
+    }
+
+    console.log(`📄 Client: CEK successfully unwrapped (JWE alg: ${protectedHeader.alg}). ChunkSize: ${plaintextChunkSize}, ContentType: ${contentType}` + (contentEncoding ? `, ContentEncoding: ${contentEncoding}`: ""));
+    return { cek, cipher: payload.cipher, plaintextChunkSize, contentType, contentEncoding };
   } catch (error: any) {
     console.error("📄 Client: Error unwrapping CEK:", error.message, error.code ? `(code: ${error.code})` : '');
     if (error.stack) console.error(error.stack);
@@ -518,7 +533,8 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
   const encryptedFileUrl = `http://${server.hostname}:${server.port}/download/${encryptedFileName}`;
 
   const jweAlg = clientKeys.keyType === 'EC' ? 'ECDH-ES+A256KW' : 'RSA-OAEP-256';
-  const jweString = await wrapCEK(cek_K, clientKeys.publicJwk, jweAlg);
+  // Pass the actual plaintext chunk size used for encryption and content type to wrapCEK
+  const jweString = await wrapCEK(cek_K, clientKeys.publicJwk, jweAlg, CHUNK_SIZE_1MB, DEFAULT_CONTENT_TYPE);
   const manifest = createManifest(encryptedFileUrl, jweString, "Binary", `${fullDemoName} Stream`);
 
   // --- Client Simulation ---
@@ -550,7 +566,8 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
   // console.log("📄 Client: Encrypted file download started, streaming to decryption...");
 
   try {
-    await decryptFileStream(response.body, tmpDec, unwrapped.cek, CHUNK_SIZE_1MB);
+    // Use the plaintextChunkSize from the unwrapped JWE payload
+    await decryptFileStream(response.body, tmpDec, unwrapped.cek, unwrapped.plaintextChunkSize);
   } catch (error) {
     console.error(`❌ FAILURE (${fullDemoName} Stream): Error during decryption from stream:`, error);
     server.stop(true);
