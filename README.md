@@ -90,7 +90,7 @@ Add an `extension` to each file entry:
 ```json
 {
   "type": "Patient",
-  "url": "https://cdn.example.com/patient_file_1.sxch",
+  "url": "https://cdn.example.com/patient_file_1.enc",
   "extension": {
     "url": "http://argo.run/bulk-export-decryption-key",
     "valueString": "<compact-JWE>"
