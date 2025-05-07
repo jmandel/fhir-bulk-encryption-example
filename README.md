@@ -54,20 +54,20 @@ offset    size        description
 
 The JWE plaintext (payload) holds parameters and keys:
 
-```json
+```js
 {
-  "v": "0.5",                            // Protocol version
-  "k": "<base64url‑encoded CEK>",     // Symmetric CEK
-  "chunk": 1048576,                      // Chunk size in bytes (optional)
-  "cipher": "secretstream_xchacha20poly1305",
-  "content_type": "application/fhir+ndjson",
-  "content_encoding": "gzip"           // Optional: gzip before encryption
+  "v": "0.5",                                 // Protocol version (fixed value)
+  "k": "<base64url‑encoded CEK>",             // Symmetric CEK
+  "chunk": 1048576,                           // Chunk size in bytes (optional)
+  "cipher": "secretstream_xchacha20poly1305", // Fixed value as of version 0.5
+  "content_type": "application/fhir+ndjson",  // Content-Type of plaintext
+  "content_encoding": "gzip"                  // Only if plaintext was gzip'd before encryption
 }
 ```
 
 ### 4.2 JWE Protected Header
 
-Use either RSA‑OAEP‑256 or ECDH‑ES+A256KW for key wrapping. The protected header contains:
+Use either RSA‑OAEP‑256 or ECDH‑ES+A256KW for key wrapping, depending on what type of JWK the client has registered. The protected header contains:
 
 | Parameter | Description                                                      |
 | --------- | ---------------------------------------------------------------- |
