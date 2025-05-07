@@ -221,6 +221,7 @@ async function generateClientECKeys(): Promise<ClientKeys> {
   privateJwk.alg = 'ECDH-ES+A256KW';
 
   console.log(`🔑 Client (EC): Generated Public JWK: ${JSON.stringify(publicJwk)}`);
+  console.log(`🔑 Client (EC): Generated Private JWK (DEMO ONLY): ${JSON.stringify(privateJwk)}`);
   return { publicKey, privateKey, publicJwk, privateJwk, keyType: 'EC' };
 }
 
@@ -242,6 +243,7 @@ async function generateClientRSAKeys(): Promise<ClientKeys> {
   privateJwk.kid = publicJwk.kid;
 
   console.log(`🔑 Client (RSA): Generated Public JWK: ${JSON.stringify(publicJwk)}`);
+  console.log(`🔑 Client (RSA): Generated Private JWK (DEMO ONLY): ${JSON.stringify(privateJwk)}`);
   return { publicKey, privateKey, publicJwk, privateJwk, keyType: 'RSA' };
 }
 
@@ -406,9 +408,10 @@ async function main() {
   const rsaClientKeys = await generateClientRSAKeys();
 
   const fileSizesToTest = [
-    1 * 1024 * 1024, 
-    10 * 1024 * 1024, 
-    20 * 1024 * 1024, 
+    // 1 * 1024 * 1024, 
+    // 10 * 1024 * 1024, 
+    // 20 * 1024 * 1024, 
+    100 * 1024 * 1024, 
   ];
 
   const testResults: Array<{name: string, encryptionMs: number, decryptionMs: number, success: boolean, encryptedSize?: number}> = [];
@@ -643,8 +646,3 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
     return { name: fullDemoName, encryptionMs: encryptionDurationMs, decryptionMs: decryptionDurationMs, success, encryptedSize: encryptedFileSize }; // Return encryptedSize
   }
 }
-
-main().catch(error => {
-  console.error("🚨 Unhandled error in main execution:", error);
-  process.exit(1);
-});

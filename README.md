@@ -147,11 +147,10 @@ Clients MUST decompress after decryption if indicated.
 * **Resuming**: Clients may resume downloads at chunk boundaries via HTTP Range requests.
 
 ---
+## 7 Reference Implementation (TypeScript/Bun)
 
+For a minimal Bun‑based reference for streaming encryption and decryption using libsodium’s SecretStream API, see `index.ts`(./index.ts).
 
-## 9. Reference Implementation
-
-See `./index.ts` for a minimal Bun‑based TypeScript reference using libsodium’s SecretStream API:
 
 ```bash
 bun install
@@ -162,6 +161,8 @@ The demo output verifies encrypted file size, timings, and successful decryption
 
 
 ## Example Output
+
+See a complete worked example at [worked-example.txt](./worked-example.txt)
 
 ```
 ------------------------------------------------------------------------------------------------------------
