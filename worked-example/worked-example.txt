@@ -1,0 +1,236 @@
+🚀 Starting FHIR Bulk Export Encryption/Decryption Demo 🚀
+Sodium (libsodium-wrappers) initialized.
+🔑 Client: Generating P-384 ECDH-ES key pair for key agreement...
+🔑 Client (EC): Generated Public JWK: {"crv":"P-384","kty":"EC","x":"SDz3Gmn2HJ3KPFqOAXmKCIpRwtEKGRvJREPraV47Opxy7Z7Rishd3lVhL8v_shMO","y":"qxO_25xzp6m6rm-mAJrDdcSVPTnPbD790vaVOEFsu6FOmcZF2i3uLetDhbTGvmk4","kid":"client-p384-key-okxrbaz5","alg":"ECDH-ES+A256KW","use":"enc","exp":1746726905}
+🔑 Client (EC): Generated Private JWK (DEMO ONLY): {"crv":"P-384","d":"lVRTjeEELNJr6LoCLeW0H31a50C_xXwXE6X-lkM84NyaxuiZDCJRJ2a8oYBDD4fp","kty":"EC","x":"SDz3Gmn2HJ3KPFqOAXmKCIpRwtEKGRvJREPraV47Opxy7Z7Rishd3lVhL8v_shMO","y":"qxO_25xzp6m6rm-mAJrDdcSVPTnPbD790vaVOEFsu6FOmcZF2i3uLetDhbTGvmk4","kid":"client-p384-key-okxrbaz5","alg":"ECDH-ES+A256KW"}
+🔑 Client: Generating RSA-OAEP-256 3072-bit key pair...
+🔑 Client (RSA): Generated Public JWK: {"e":"AQAB","kty":"RSA","n":"wKyIBX5rTq2YbFHmyE5c9qX7bWeuUqFvOFRv8xeEj5zmdyiWZOVrgr3SktHgsTn53o6yX4KHb5zOFzGD-htcYKuZiLxGavSxVLhox34WRp4ahwGW9p1DJDi9AEcN_5pscOaB1996gGRScWo2mGX3dbGz2ig0SG1G4sgClwOL75SWah5p8PQJW_vj9ep5jVBjvTqmYGEcOJPoCOTc9N1v3h-ohYsvOhcoU-GkqA5axHg-k3x9MHt4Ot7MYATEScDhbEEQx-m6k878bxruWit3EVw-8yf72pGEdgwgHIZwc4lVHvozwIkntBCNaO8-BjtjgjthGT47vZyTulVk6bJVUB18vZREVe_MV2AwKHO5d0WsXFltKM4FwAr9_Jdjl0WUtnVy1lgUMNLkA-1MxuQ-O1nyoDSmRJyw9ebMPoY19i8Ixvrx7_zGORxaFxt9bDxxxJ_MRMPRX_YAs-JWf--Lebl_Lv2EJEf_-QFVyDGrXP3bn98wCcmXaMY0Aed4QA0p","kid":"client-rsa3072-key-2y62cjq9","alg":"RSA-OAEP-256","use":"enc","exp":1746726906}
+🔑 Client (RSA): Generated Private JWK (DEMO ONLY): {"d":"SWiSzJENfmUKmV6dEL02kyzLPjROCSKDtxEItDRGJ9duQYEfx-JXE3GSTKkVNED0EBULJfOb-WzjYpfVglGxYQ2QSjX9mFuRQsed-D_0acRsM_rpkx14ytCpRfVMgpHJ9jwExYRabpeKh7ahhW_4GAn0Dc7amKu14cq1nebWhpn0swrSb2DzPe4bPQMwe6Rg0-SIJllpgK7trZHRE6RYrmcedH8Cp93R2h-y9eq-L3Pm15eLNREdzkQ71uuKA9WuA_IJSYS798gYtQs8TvvZygf7yMdAzbWS1CZCCc9o9LWQ0hjEEafCvTMxMAxREdR-fj5fJ26gV4TfJU8r69slAGkdESLmAHu5LbuQKjVv9Kn6WzF5ey1rYAADZse6HNQ7E4HAJYPCX7W8D0klsZLbL70d3or-xYiz_3lGePatiJoLp-1qBTtxupRomWDzwGPgIJ0za3TAv2uf_d5NwoKJSUFWt2MIDaEFfwCOREXnRdoWB-EV0yBeR0P1kMQ0Hm0f","dp":"5XgsAfsf611CFcW9IQEFwMcI90C94IxHFXb0Y6Ii3-tDl4qy2jawLP01iA_Mb4m5327SutMXFKOeY2Tpg749CAEAAfsJTHvuO2aT54zbIP95MamHT-eI1LcdvRbIDG6RHIy0E_oHvf6s45efXTTr69tCo2j5Do8PNfZfNY5a7YImIKLbYCmZhzTNP0uRO0XFuXWqyl2kgfjY5VngtZCGF8C-ntIX4bwmRyfOM9_Yjve82PshC2FH1jjL9TulaoD5","dq":"tA2mnnbb13DqZpoECU73lsYOrWJ9hpY4bBOVJU8ntA4FTuFRWF1zqwDllqoavNfTWIf1f8fZZjtwd4xL4TjgdMBmsgEXY7JdrsI3qg1xk3knrPUThRdDm5NF7CMW_j36jOn5R2V2UMchVSv2wFNtBsW1EP1I6UUUMgfTJtaRugvwalOgZhQQh6R9sbaeTFWbs_9Zaqug--Ir-DAyUzDKBhEUVPXvUNwuwd6fFNhjqBQIdSHzjT5cmeVZZCgTn4v9","e":"AQAB","kty":"RSA","n":"wKyIBX5rTq2YbFHmyE5c9qX7bWeuUqFvOFRv8xeEj5zmdyiWZOVrgr3SktHgsTn53o6yX4KHb5zOFzGD-htcYKuZiLxGavSxVLhox34WRp4ahwGW9p1DJDi9AEcN_5pscOaB1996gGRScWo2mGX3dbGz2ig0SG1G4sgClwOL75SWah5p8PQJW_vj9ep5jVBjvTqmYGEcOJPoCOTc9N1v3h-ohYsvOhcoU-GkqA5axHg-k3x9MHt4Ot7MYATEScDhbEEQx-m6k878bxruWit3EVw-8yf72pGEdgwgHIZwc4lVHvozwIkntBCNaO8-BjtjgjthGT47vZyTulVk6bJVUB18vZREVe_MV2AwKHO5d0WsXFltKM4FwAr9_Jdjl0WUtnVy1lgUMNLkA-1MxuQ-O1nyoDSmRJyw9ebMPoY19i8Ixvrx7_zGORxaFxt9bDxxxJ_MRMPRX_YAs-JWf--Lebl_Lv2EJEf_-QFVyDGrXP3bn98wCcmXaMY0Aed4QA0p","p":"6hZ67pMwwIjgPsSbJcCvNhGq6NjblYCtCxHoOp5dw0Ocvdx_NvLcEloAwRPEQdJbDKypkW_SQNn_OyG7JSdC6_0JDKblljdaEecp9eXGUsRQ-c98H9-1xaFc1LYL50nmgnhHql3tw_-Y2a8i2LHrDxdYUGFHa_0fPrYUGV2Uxrf8L4ji2_MIPmlP85o-_Lp-NCqrmhYWWGNwuyM74agYAW4NzThvhq_HJFmJPEpTjHk_vm0ITGPbLasdyFawJywX","q":"0rWjQjnh_IeAL2pB5XIOotFVge4KAcETmlp2N40n-gdWqonaI6ss_hLRarN5asmOna_rs8_zxtzutPPUJB3P9E0twEaM1cwFmbHS-8D4Pf-0G73rgymOVbJsX3Pgql3JptgtD4cD_LvMFxA6RpvLfs9szJ7einatPzPQ7ZqcpqOuS18H4Se8eNBmpOVniMycKWlNDaeSZak8mSy6RGHP9bzsTqLZF9BiSqVbLQ-lKXW_xRi3I7XYHxfw50ayvBi_","qi":"M2JrGaajJHXGZ79h0S4LqwfuoKkPJb6gABWUSHCn8-jJoxBOTrupm0gkMhHfr1CDyKixGGgB89lS7mySm5SWfrhKtJlbZSM0u1aHMqWI1z0wellV2FKPFdkYqxAFkcC8fOD4JO2kh599QqB1DHYXqGPof_uhKZO7WDMzMUco-mkr5Oi7OUTyUtpnH7mJsL_kNfDAbJggknFTz6PjK2luO507Dn3nfkaYXXVs1IYSjam7uB5LdtlRHRildXiNneVy","kid":"client-rsa3072-key-2y62cjq9"}
+
+🧪🧪🧪 Starting Test Runs for File Size: 1MB 🧪🧪🧪
+
+--- Starting ECDH-ES Demo - 1MB Streaming File Flow (EC Keys) ---
+[RUN] Pre-emptively deleting ./encrypted_stream_ecdh-es_demo_1MB.bin and ./decrypted_stream_ecdh-es_demo_1MB.ndjson if they exist...
+[RUN] Pre-emptive deletion complete.
+🛡️ Server: Generating Content Encryption Key (CEK) for NDJSON...
+🛡️ Server: Generated CEK (base64url): FQDUmccy2Xj_fwmgrkjHr7bzy26fn5w56pUSxuR63q8 (DEMO ONLY - DO NOT LOG IN PROD)
+[RUN] Non-GZIP mode: JWE chunk parameter set to fixed size: 1048576 B
+🔐 Encrypting ./plaintext_ndjson_1MB.ndjson → ./encrypted_stream_ecdh-es_demo_1MB.bin
+🔐 Encryption complete: ./encrypted_stream_ecdh-es_demo_1MB.bin
+🛡️ Server: Wrapping CEK with client's public key using JWE (alg: ECDH-ES+A256KW)...
+🛡️ Server: JWE Payload to be encrypted: {
+  "v": "0.5",
+  "k": "FQDUmccy2Xj_fwmgrkjHr7bzy26fn5w56pUSxuR63q8",
+  "cipher": "secretstream_xchacha20poly1305",
+  "chunk": 1048576,
+  "content_type": "application/fhir+ndjson"
+}
+🛡️ Server: CEK wrapped in JWE compact serialization.
+🛡️ Server: Compact JWE: eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJraWQiOiJjbGllbnQtcDM4NC1rZXktb2t4cmJhejUiLCJjdHkiOiJhcHBsaWNhdGlvbi9qc29uIiwiZXBrIjp7IngiOiJRRkJvUnN2ZE9pQ18wbUhHYXMtRXZtMUNGbC1lM3VmYmFrTnlOamlxcWptakExSVNwMWJGOU9qaURSaUJMUGZFIiwiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsInkiOiJUbFc2N01TdElwNWhKQVBzWmMyRlNBWG1veTdzMmhNR1R6QzJpU1Y5R21NWHJVdkZ4LUZCQTI2MmdIckdVY0xsIn19.g362L2pmPGRKZ4Objma0-dzxFhvCgf9kRZ72EnHJKjs0xS6CSkGTHQ.9h2hkD_A-wZbev4X.mYDtqmheWDd6zmIV9BmyMCjwiYFQ_gxMUkoq5DzYoyzKBtxiki4xZUciQx4uCCRUtUwNdhJRNDMIO2_PiXQIklA5PQL3IpEYhWbh47JIwEVNbP2DDlNDX49nmCYXfYH4XeFY0DEqwoBPqM56tpDuCDbZSSvQuFUweXCzXhptJ9ddj2222SbIiTihNC_ddUJqdPMR5hADUfXBfa_IcAiHRw.8zWM7UQon09SP4wR7eegTw
+🛡️ Server: Creating Bulk Export manifest ECDH-ES Demo - 1MB Stream...
+🛡️ Server: Manifest created: {
+  "transactionTime": "2025-05-07T17:55:06.536Z",
+  "request": "https://example.com/fhir/Patient/$export?_type=Patient,Observation&run=ECDH-ES Demo - 1MB Stream",
+  "requiresAccessToken": true,
+  "output": [
+    {
+      "type": "Patient",
+      "url": "http://localhost:36439/download/encrypted_stream_ecdh-es_demo_1MB.bin",
+      "extension": {
+        "http://argo.run/bulk-export-decryption-key": "eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJraWQiOiJjbGllbnQtcDM4NC1rZXktb2t4cmJhejUiLCJjdHkiOiJhcHBsaWNhdGlvbi9qc29uIiwiZXBrIjp7IngiOiJRRkJvUnN2ZE9pQ18wbUhHYXMtRXZtMUNGbC1lM3VmYmFrTnlOamlxcWptakExSVNwMWJGOU9qaURSaUJMUGZFIiwiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsInkiOiJUbFc2N01TdElwNWhKQVBzWmMyRlNBWG1veTdzMmhNR1R6QzJpU1Y5R21NWHJVdkZ4LUZCQTI2MmdIckdVY0xsIn19.g362L2pmPGRKZ4Objma0-dzxFhvCgf9kRZ72EnHJKjs0xS6CSkGTHQ.9h2hkD_A-wZbev4X.mYDtqmheWDd6zmIV9BmyMCjwiYFQ_gxMUkoq5DzYoyzKBtxiki4xZUciQx4uCCRUtUwNdhJRNDMIO2_PiXQIklA5PQL3IpEYhWbh47JIwEVNbP2DDlNDX49nmCYXfYH4XeFY0DEqwoBPqM56tpDuCDbZSSvQuFUweXCzXhptJ9ddj2222SbIiTihNC_ddUJqdPMR5hADUfXBfa_IcAiHRw.8zWM7UQon09SP4wR7eegTw"
+      }
+    }
+  ]
+}
+📄 Client: Resolving manifest for file type "Patient"...
+📄 Client: JWE string extracted from manifest: eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJraWQiOiJjbGllbnQtcDM4NC1rZXktb2t4cmJhejUiLCJjdHkiOiJhcHBsaWNhdGlvbi9qc29uIiwiZXBrIjp7IngiOiJRRkJvUnN2ZE9pQ18wbUhHYXMtRXZtMUNGbC1lM3VmYmFrTnlOamlxcWptakExSVNwMWJGOU9qaURSaUJMUGZFIiwiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsInkiOiJUbFc2N01TdElwNWhKQVBzWmMyRlNBWG1veTdzMmhNR1R6QzJpU1Y5R21NWHJVdkZ4LUZCQTI2MmdIckdVY0xsIn19.g362L2pmPGRKZ4Objma0-dzxFhvCgf9kRZ72EnHJKjs0xS6CSkGTHQ.9h2hkD_A-wZbev4X.mYDtqmheWDd6zmIV9BmyMCjwiYFQ_gxMUkoq5DzYoyzKBtxiki4xZUciQx4uCCRUtUwNdhJRNDMIO2_PiXQIklA5PQL3IpEYhWbh47JIwEVNbP2DDlNDX49nmCYXfYH4XeFY0DEqwoBPqM56tpDuCDbZSSvQuFUweXCzXhptJ9ddj2222SbIiTihNC_ddUJqdPMR5hADUfXBfa_IcAiHRw.8zWM7UQon09SP4wR7eegTw
+📄 Client: Unwrapping CEK from JWE (expecting alg: ECDH-ES+A256KW)...
+📄 Client: Received Compact JWE for unwrapping: eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJraWQiOiJjbGllbnQtcDM4NC1rZXktb2t4cmJhejUiLCJjdHkiOiJhcHBsaWNhdGlvbi9qc29uIiwiZXBrIjp7IngiOiJRRkJvUnN2ZE9pQ18wbUhHYXMtRXZtMUNGbC1lM3VmYmFrTnlOamlxcWptakExSVNwMWJGOU9qaURSaUJMUGZFIiwiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsInkiOiJUbFc2N01TdElwNWhKQVBzWmMyRlNBWG1veTdzMmhNR1R6QzJpU1Y5R21NWHJVdkZ4LUZCQTI2MmdIckdVY0xsIn19.g362L2pmPGRKZ4Objma0-dzxFhvCgf9kRZ72EnHJKjs0xS6CSkGTHQ.9h2hkD_A-wZbev4X.mYDtqmheWDd6zmIV9BmyMCjwiYFQ_gxMUkoq5DzYoyzKBtxiki4xZUciQx4uCCRUtUwNdhJRNDMIO2_PiXQIklA5PQL3IpEYhWbh47JIwEVNbP2DDlNDX49nmCYXfYH4XeFY0DEqwoBPqM56tpDuCDbZSSvQuFUweXCzXhptJ9ddj2222SbIiTihNC_ddUJqdPMR5hADUfXBfa_IcAiHRw.8zWM7UQon09SP4wR7eegTw
+📄 Client: Decrypted JWE Payload: {
+  "v": "0.5",
+  "k": "FQDUmccy2Xj_fwmgrkjHr7bzy26fn5w56pUSxuR63q8",
+  "cipher": "secretstream_xchacha20poly1305",
+  "chunk": 1048576,
+  "content_type": "application/fhir+ndjson"
+}
+📄 Client: Unwrapped CEK (base64url): FQDUmccy2Xj_fwmgrkjHr7bzy26fn5w56pUSxuR63q8 (DEMO ONLY - DO NOT LOG IN PROD)
+📄 Client: CEK successfully unwrapped (JWE alg: ECDH-ES+A256KW). ChunkSize: 1048576, ContentType: application/fhir+ndjson
+🔓 Decrypting to ./decrypted_stream_ecdh-es_demo_1MB.ndjson (chunkSize: 1048576 B, encoding: none)
+🔓 Decryption complete: ./decrypted_stream_ecdh-es_demo_1MB.ndjson
+✅ SUCCESS (ECDH-ES Demo - 1MB Stream): Decrypted file matches original (plain source). Encrypted size: 1023.81 KB
+--- ECDH-ES Demo - 1MB Streaming File Flow Complete (SUCCESS in Enc: 25.03 ms, Dec: 36.93 ms, Enc Size: 1023.81 KB) ---
+
+
+--- Starting RSA-OAEP Demo - 1MB Streaming File Flow (RSA Keys) ---
+[RUN] Pre-emptively deleting ./encrypted_stream_rsa-oaep_demo_1MB.bin and ./decrypted_stream_rsa-oaep_demo_1MB.ndjson if they exist...
+[RUN] Pre-emptive deletion complete.
+🛡️ Server: Generating Content Encryption Key (CEK) for NDJSON...
+🛡️ Server: Generated CEK (base64url): ED_LygAgHDtSOLZ32MYtSSHuB1pn4FtpCAISoShtsCc (DEMO ONLY - DO NOT LOG IN PROD)
+[RUN] Non-GZIP mode: JWE chunk parameter set to fixed size: 1048576 B
+🔐 Encrypting ./plaintext_ndjson_1MB.ndjson → ./encrypted_stream_rsa-oaep_demo_1MB.bin
+🔐 Encryption complete: ./encrypted_stream_rsa-oaep_demo_1MB.bin
+🛡️ Server: Wrapping CEK with client's public key using JWE (alg: RSA-OAEP-256)...
+🛡️ Server: JWE Payload to be encrypted: {
+  "v": "0.5",
+  "k": "ED_LygAgHDtSOLZ32MYtSSHuB1pn4FtpCAISoShtsCc",
+  "cipher": "secretstream_xchacha20poly1305",
+  "chunk": 1048576,
+  "content_type": "application/fhir+ndjson"
+}
+🛡️ Server: CEK wrapped in JWE compact serialization.
+🛡️ Server: Compact JWE: eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiY2xpZW50LXJzYTMwNzIta2V5LTJ5NjJjanE5IiwiY3R5IjoiYXBwbGljYXRpb24vanNvbiJ9.up12-b_rxlS0fGvd8EgPUfPOAMEum8hg2GNLOuHA7xDl3_Gy0Q0De9tiqWBiATWq8_AoAyfgEeeZk5mhkjA7JrtFxOJ2p4Tb57BLfuUzsC6hwU5mMvB7dF63L0j8HTRg2PCFWTeGq_bWGyvGPWe-_Ik2bJNp4rhJWt6bPbJKrrXKljP-Vun40oi36xUeazRb9lpGLuZr6lvWMnTvca7OP8ltZC14Oeg6mHrSv32jkwygagvUMLTfOd0vtQwAmMcXhyFUTfW-kDFFdT6XtqC1xmw7pu4GpVZVUPYvR_v7hpT40OOML5xZanWwno9fQY2DalUQEqLMUXcfi5vxWrBtplPuJoevVdYjd7sINpIOieb4Srjj_5YPGU-mtx2ay32BcgTtEzVz7j-GNo02tIZVbf4g6HA9TS5RtgjDkYCNmAJYOYvhBnTY95WU9LMYeZTvX5-s8Mp5fyDLCzprG1WxTjFTO762Fj7HoD2H8dQo3kXw-2vfD5twWS-3Q-cb2djZ.TdzAhyAoXf0JEDVu.zdP-4CXjVu7q6MnhKuOZMwLBv6eFOqK3WkuO00-9setPlyhte2lPP5Nk3riML4VpW2xcuDTQdye6cbBUB6hpffTSx9uTWYfZG5yqrlr55U92NwoWXLrl6N2GwntCSWWKJPAuVJSp5XSSjwrDevEMLqzPg3saDf9n9muHj4inJloEtoZ0HXV4S4bLZEUxKbKxrvEfaRis-EkrT6c_Z2J0ow.CukajY4J5jlKtVVXXmnFAw
+🛡️ Server: Creating Bulk Export manifest RSA-OAEP Demo - 1MB Stream...
+🛡️ Server: Manifest created: {
+  "transactionTime": "2025-05-07T17:55:06.601Z",
+  "request": "https://example.com/fhir/Patient/$export?_type=Patient,Observation&run=RSA-OAEP Demo - 1MB Stream",
+  "requiresAccessToken": true,
+  "output": [
+    {
+      "type": "Patient",
+      "url": "http://localhost:35249/download/encrypted_stream_rsa-oaep_demo_1MB.bin",
+      "extension": {
+        "http://argo.run/bulk-export-decryption-key": "eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiY2xpZW50LXJzYTMwNzIta2V5LTJ5NjJjanE5IiwiY3R5IjoiYXBwbGljYXRpb24vanNvbiJ9.up12-b_rxlS0fGvd8EgPUfPOAMEum8hg2GNLOuHA7xDl3_Gy0Q0De9tiqWBiATWq8_AoAyfgEeeZk5mhkjA7JrtFxOJ2p4Tb57BLfuUzsC6hwU5mMvB7dF63L0j8HTRg2PCFWTeGq_bWGyvGPWe-_Ik2bJNp4rhJWt6bPbJKrrXKljP-Vun40oi36xUeazRb9lpGLuZr6lvWMnTvca7OP8ltZC14Oeg6mHrSv32jkwygagvUMLTfOd0vtQwAmMcXhyFUTfW-kDFFdT6XtqC1xmw7pu4GpVZVUPYvR_v7hpT40OOML5xZanWwno9fQY2DalUQEqLMUXcfi5vxWrBtplPuJoevVdYjd7sINpIOieb4Srjj_5YPGU-mtx2ay32BcgTtEzVz7j-GNo02tIZVbf4g6HA9TS5RtgjDkYCNmAJYOYvhBnTY95WU9LMYeZTvX5-s8Mp5fyDLCzprG1WxTjFTO762Fj7HoD2H8dQo3kXw-2vfD5twWS-3Q-cb2djZ.TdzAhyAoXf0JEDVu.zdP-4CXjVu7q6MnhKuOZMwLBv6eFOqK3WkuO00-9setPlyhte2lPP5Nk3riML4VpW2xcuDTQdye6cbBUB6hpffTSx9uTWYfZG5yqrlr55U92NwoWXLrl6N2GwntCSWWKJPAuVJSp5XSSjwrDevEMLqzPg3saDf9n9muHj4inJloEtoZ0HXV4S4bLZEUxKbKxrvEfaRis-EkrT6c_Z2J0ow.CukajY4J5jlKtVVXXmnFAw"
+      }
+    }
+  ]
+}
+📄 Client: Resolving manifest for file type "Patient"...
+📄 Client: JWE string extracted from manifest: eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiY2xpZW50LXJzYTMwNzIta2V5LTJ5NjJjanE5IiwiY3R5IjoiYXBwbGljYXRpb24vanNvbiJ9.up12-b_rxlS0fGvd8EgPUfPOAMEum8hg2GNLOuHA7xDl3_Gy0Q0De9tiqWBiATWq8_AoAyfgEeeZk5mhkjA7JrtFxOJ2p4Tb57BLfuUzsC6hwU5mMvB7dF63L0j8HTRg2PCFWTeGq_bWGyvGPWe-_Ik2bJNp4rhJWt6bPbJKrrXKljP-Vun40oi36xUeazRb9lpGLuZr6lvWMnTvca7OP8ltZC14Oeg6mHrSv32jkwygagvUMLTfOd0vtQwAmMcXhyFUTfW-kDFFdT6XtqC1xmw7pu4GpVZVUPYvR_v7hpT40OOML5xZanWwno9fQY2DalUQEqLMUXcfi5vxWrBtplPuJoevVdYjd7sINpIOieb4Srjj_5YPGU-mtx2ay32BcgTtEzVz7j-GNo02tIZVbf4g6HA9TS5RtgjDkYCNmAJYOYvhBnTY95WU9LMYeZTvX5-s8Mp5fyDLCzprG1WxTjFTO762Fj7HoD2H8dQo3kXw-2vfD5twWS-3Q-cb2djZ.TdzAhyAoXf0JEDVu.zdP-4CXjVu7q6MnhKuOZMwLBv6eFOqK3WkuO00-9setPlyhte2lPP5Nk3riML4VpW2xcuDTQdye6cbBUB6hpffTSx9uTWYfZG5yqrlr55U92NwoWXLrl6N2GwntCSWWKJPAuVJSp5XSSjwrDevEMLqzPg3saDf9n9muHj4inJloEtoZ0HXV4S4bLZEUxKbKxrvEfaRis-EkrT6c_Z2J0ow.CukajY4J5jlKtVVXXmnFAw
+📄 Client: Unwrapping CEK from JWE (expecting alg: RSA-OAEP-256)...
+📄 Client: Received Compact JWE for unwrapping: eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiY2xpZW50LXJzYTMwNzIta2V5LTJ5NjJjanE5IiwiY3R5IjoiYXBwbGljYXRpb24vanNvbiJ9.up12-b_rxlS0fGvd8EgPUfPOAMEum8hg2GNLOuHA7xDl3_Gy0Q0De9tiqWBiATWq8_AoAyfgEeeZk5mhkjA7JrtFxOJ2p4Tb57BLfuUzsC6hwU5mMvB7dF63L0j8HTRg2PCFWTeGq_bWGyvGPWe-_Ik2bJNp4rhJWt6bPbJKrrXKljP-Vun40oi36xUeazRb9lpGLuZr6lvWMnTvca7OP8ltZC14Oeg6mHrSv32jkwygagvUMLTfOd0vtQwAmMcXhyFUTfW-kDFFdT6XtqC1xmw7pu4GpVZVUPYvR_v7hpT40OOML5xZanWwno9fQY2DalUQEqLMUXcfi5vxWrBtplPuJoevVdYjd7sINpIOieb4Srjj_5YPGU-mtx2ay32BcgTtEzVz7j-GNo02tIZVbf4g6HA9TS5RtgjDkYCNmAJYOYvhBnTY95WU9LMYeZTvX5-s8Mp5fyDLCzprG1WxTjFTO762Fj7HoD2H8dQo3kXw-2vfD5twWS-3Q-cb2djZ.TdzAhyAoXf0JEDVu.zdP-4CXjVu7q6MnhKuOZMwLBv6eFOqK3WkuO00-9setPlyhte2lPP5Nk3riML4VpW2xcuDTQdye6cbBUB6hpffTSx9uTWYfZG5yqrlr55U92NwoWXLrl6N2GwntCSWWKJPAuVJSp5XSSjwrDevEMLqzPg3saDf9n9muHj4inJloEtoZ0HXV4S4bLZEUxKbKxrvEfaRis-EkrT6c_Z2J0ow.CukajY4J5jlKtVVXXmnFAw
+📄 Client: Decrypted JWE Payload: {
+  "v": "0.5",
+  "k": "ED_LygAgHDtSOLZ32MYtSSHuB1pn4FtpCAISoShtsCc",
+  "cipher": "secretstream_xchacha20poly1305",
+  "chunk": 1048576,
+  "content_type": "application/fhir+ndjson"
+}
+📄 Client: Unwrapped CEK (base64url): ED_LygAgHDtSOLZ32MYtSSHuB1pn4FtpCAISoShtsCc (DEMO ONLY - DO NOT LOG IN PROD)
+📄 Client: CEK successfully unwrapped (JWE alg: RSA-OAEP-256). ChunkSize: 1048576, ContentType: application/fhir+ndjson
+🔓 Decrypting to ./decrypted_stream_rsa-oaep_demo_1MB.ndjson (chunkSize: 1048576 B, encoding: none)
+🔓 Decryption complete: ./decrypted_stream_rsa-oaep_demo_1MB.ndjson
+✅ SUCCESS (RSA-OAEP Demo - 1MB Stream): Decrypted file matches original (plain source). Encrypted size: 1023.81 KB
+--- RSA-OAEP Demo - 1MB Streaming File Flow Complete (SUCCESS in Enc: 11.52 ms, Dec: 12.27 ms, Enc Size: 1023.81 KB) ---
+
+
+--- 1MB / GZIP ---
+
+--- Starting ECDH-ES Demo - 1MB_GZIP Streaming File Flow (EC Keys) ---
+[RUN] Pre-emptively deleting ./encrypted_stream_ecdh-es_demo_1MB_gzip.bin and ./decrypted_stream_ecdh-es_demo_1MB_gzip.ndjson.gz if they exist...
+[RUN] Pre-emptive deletion complete.
+🛡️ Server: Generating Content Encryption Key (CEK) for NDJSON...
+🛡️ Server: Generated CEK (base64url): -O5cyoX-wHdneJi2CI2YM77YIGtd1UvwuFV3Ah-kTEM (DEMO ONLY - DO NOT LOG IN PROD)
+[RUN] GZIP mode: JWE chunk parameter is FIXED at 1048576 B (actual gzipped size was 178054 B)
+🔐 Encrypting ./plaintext_ndjson_1MB.ndjson.gz → ./encrypted_stream_ecdh-es_demo_1MB_gzip.bin
+🔐 Encryption complete: ./encrypted_stream_ecdh-es_demo_1MB_gzip.bin
+🛡️ Server: Wrapping CEK with client's public key using JWE (alg: ECDH-ES+A256KW)...
+🛡️ Server: JWE Payload to be encrypted: {
+  "v": "0.5",
+  "k": "-O5cyoX-wHdneJi2CI2YM77YIGtd1UvwuFV3Ah-kTEM",
+  "cipher": "secretstream_xchacha20poly1305",
+  "chunk": 1048576,
+  "content_type": "application/fhir+ndjson",
+  "content_encoding": "gzip"
+}
+🛡️ Server: CEK wrapped in JWE compact serialization.
+🛡️ Server: Compact JWE: eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJraWQiOiJjbGllbnQtcDM4NC1rZXktb2t4cmJhejUiLCJjdHkiOiJhcHBsaWNhdGlvbi9qc29uIiwiZXBrIjp7IngiOiItRTZjdkFNYVl4SlA0dm43a2c4SldFb0lpQnJnbURnellsMlpGVHE1Y1JPNXUybG5fR05IRXJIRkJkcy1ZRF9LIiwiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsInkiOiJYQjRkVE5kSFVHZ2ZaNEVVN3ExbjdGX2RieFRMeGlHZV9RZE9SeEpLOXpoSzNxeDVmaEFyRFJNcGd5MUVxWVpiIn19.odrNBYnynnKfXRoeh6_QfE_t2ChEGGDYgsk7J0vI8Uwgt8L9hvIClw.-9bQseDiATWIrRWj.Y3MQwx5fym_Q7hHCavm7d3bZVkT_QlO8IDokxetwpWJ55cRI9XX6Jzotd7QIjxqkpkGPrCXGjQm19oH0fqlQ3VVVQE3-3Ve9gzgKr3LXLxEeOlGUlsyrtu_Is1h9aIGH0FCbeGPTmNt74dELY5kda5MHwT0vRHF2G7UgOpSEy9QaH5yfj-17wstXZm6LfwgzSY1FWP0ISEl9RBdbnz6c8YuNpxvos_IgFyl0S6zoL6OqJX1Hv-Zj0MMj.8lUb19YDcwU82RIhRGWr_w
+🛡️ Server: Creating Bulk Export manifest ECDH-ES Demo - 1MB_GZIP Stream...
+🛡️ Server: Manifest created: {
+  "transactionTime": "2025-05-07T17:55:06.632Z",
+  "request": "https://example.com/fhir/Patient/$export?_type=Patient,Observation&run=ECDH-ES Demo - 1MB_GZIP Stream",
+  "requiresAccessToken": true,
+  "output": [
+    {
+      "type": "Patient",
+      "url": "http://localhost:43735/download/encrypted_stream_ecdh-es_demo_1MB_gzip.bin",
+      "extension": {
+        "http://argo.run/bulk-export-decryption-key": "eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJraWQiOiJjbGllbnQtcDM4NC1rZXktb2t4cmJhejUiLCJjdHkiOiJhcHBsaWNhdGlvbi9qc29uIiwiZXBrIjp7IngiOiItRTZjdkFNYVl4SlA0dm43a2c4SldFb0lpQnJnbURnellsMlpGVHE1Y1JPNXUybG5fR05IRXJIRkJkcy1ZRF9LIiwiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsInkiOiJYQjRkVE5kSFVHZ2ZaNEVVN3ExbjdGX2RieFRMeGlHZV9RZE9SeEpLOXpoSzNxeDVmaEFyRFJNcGd5MUVxWVpiIn19.odrNBYnynnKfXRoeh6_QfE_t2ChEGGDYgsk7J0vI8Uwgt8L9hvIClw.-9bQseDiATWIrRWj.Y3MQwx5fym_Q7hHCavm7d3bZVkT_QlO8IDokxetwpWJ55cRI9XX6Jzotd7QIjxqkpkGPrCXGjQm19oH0fqlQ3VVVQE3-3Ve9gzgKr3LXLxEeOlGUlsyrtu_Is1h9aIGH0FCbeGPTmNt74dELY5kda5MHwT0vRHF2G7UgOpSEy9QaH5yfj-17wstXZm6LfwgzSY1FWP0ISEl9RBdbnz6c8YuNpxvos_IgFyl0S6zoL6OqJX1Hv-Zj0MMj.8lUb19YDcwU82RIhRGWr_w"
+      }
+    }
+  ]
+}
+📄 Client: Resolving manifest for file type "Patient"...
+📄 Client: JWE string extracted from manifest: eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJraWQiOiJjbGllbnQtcDM4NC1rZXktb2t4cmJhejUiLCJjdHkiOiJhcHBsaWNhdGlvbi9qc29uIiwiZXBrIjp7IngiOiItRTZjdkFNYVl4SlA0dm43a2c4SldFb0lpQnJnbURnellsMlpGVHE1Y1JPNXUybG5fR05IRXJIRkJkcy1ZRF9LIiwiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsInkiOiJYQjRkVE5kSFVHZ2ZaNEVVN3ExbjdGX2RieFRMeGlHZV9RZE9SeEpLOXpoSzNxeDVmaEFyRFJNcGd5MUVxWVpiIn19.odrNBYnynnKfXRoeh6_QfE_t2ChEGGDYgsk7J0vI8Uwgt8L9hvIClw.-9bQseDiATWIrRWj.Y3MQwx5fym_Q7hHCavm7d3bZVkT_QlO8IDokxetwpWJ55cRI9XX6Jzotd7QIjxqkpkGPrCXGjQm19oH0fqlQ3VVVQE3-3Ve9gzgKr3LXLxEeOlGUlsyrtu_Is1h9aIGH0FCbeGPTmNt74dELY5kda5MHwT0vRHF2G7UgOpSEy9QaH5yfj-17wstXZm6LfwgzSY1FWP0ISEl9RBdbnz6c8YuNpxvos_IgFyl0S6zoL6OqJX1Hv-Zj0MMj.8lUb19YDcwU82RIhRGWr_w
+📄 Client: Unwrapping CEK from JWE (expecting alg: ECDH-ES+A256KW)...
+📄 Client: Received Compact JWE for unwrapping: eyJhbGciOiJFQ0RILUVTK0EyNTZLVyIsImVuYyI6IkEyNTZHQ00iLCJraWQiOiJjbGllbnQtcDM4NC1rZXktb2t4cmJhejUiLCJjdHkiOiJhcHBsaWNhdGlvbi9qc29uIiwiZXBrIjp7IngiOiItRTZjdkFNYVl4SlA0dm43a2c4SldFb0lpQnJnbURnellsMlpGVHE1Y1JPNXUybG5fR05IRXJIRkJkcy1ZRF9LIiwiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsInkiOiJYQjRkVE5kSFVHZ2ZaNEVVN3ExbjdGX2RieFRMeGlHZV9RZE9SeEpLOXpoSzNxeDVmaEFyRFJNcGd5MUVxWVpiIn19.odrNBYnynnKfXRoeh6_QfE_t2ChEGGDYgsk7J0vI8Uwgt8L9hvIClw.-9bQseDiATWIrRWj.Y3MQwx5fym_Q7hHCavm7d3bZVkT_QlO8IDokxetwpWJ55cRI9XX6Jzotd7QIjxqkpkGPrCXGjQm19oH0fqlQ3VVVQE3-3Ve9gzgKr3LXLxEeOlGUlsyrtu_Is1h9aIGH0FCbeGPTmNt74dELY5kda5MHwT0vRHF2G7UgOpSEy9QaH5yfj-17wstXZm6LfwgzSY1FWP0ISEl9RBdbnz6c8YuNpxvos_IgFyl0S6zoL6OqJX1Hv-Zj0MMj.8lUb19YDcwU82RIhRGWr_w
+📄 Client: Decrypted JWE Payload: {
+  "v": "0.5",
+  "k": "-O5cyoX-wHdneJi2CI2YM77YIGtd1UvwuFV3Ah-kTEM",
+  "cipher": "secretstream_xchacha20poly1305",
+  "chunk": 1048576,
+  "content_type": "application/fhir+ndjson",
+  "content_encoding": "gzip"
+}
+📄 Client: Unwrapped CEK (base64url): -O5cyoX-wHdneJi2CI2YM77YIGtd1UvwuFV3Ah-kTEM (DEMO ONLY - DO NOT LOG IN PROD)
+📄 Client: CEK successfully unwrapped (JWE alg: ECDH-ES+A256KW). ChunkSize: 1048576, ContentType: application/fhir+ndjson, ContentEncoding: gzip
+🔓 Decrypting to ./decrypted_stream_ecdh-es_demo_1MB_gzip.ndjson.gz (chunkSize: 1048576 B, encoding: gzip)
+🔓 Decryption complete: ./decrypted_stream_ecdh-es_demo_1MB_gzip.ndjson.gz
+✅ SUCCESS (ECDH-ES Demo - 1MB_GZIP Stream): Decrypted file matches original (gzipped source). Encrypted size: 173.92 KB
+--- ECDH-ES Demo - 1MB_GZIP Streaming File Flow Complete (SUCCESS in Enc: 2.72 ms, Dec: 2.63 ms, Enc Size: 173.92 KB) ---
+
+
+--- Starting RSA-OAEP Demo - 1MB_GZIP Streaming File Flow (RSA Keys) ---
+[RUN] Pre-emptively deleting ./encrypted_stream_rsa-oaep_demo_1MB_gzip.bin and ./decrypted_stream_rsa-oaep_demo_1MB_gzip.ndjson.gz if they exist...
+[RUN] Pre-emptive deletion complete.
+🛡️ Server: Generating Content Encryption Key (CEK) for NDJSON...
+🛡️ Server: Generated CEK (base64url): 5pdvuSFvkYj8xl0VJZo5lNREMN4-uCqO9armoDZ2yvM (DEMO ONLY - DO NOT LOG IN PROD)
+[RUN] GZIP mode: JWE chunk parameter is FIXED at 1048576 B (actual gzipped size was 178054 B)
+🔐 Encrypting ./plaintext_ndjson_1MB.ndjson.gz → ./encrypted_stream_rsa-oaep_demo_1MB_gzip.bin
+🔐 Encryption complete: ./encrypted_stream_rsa-oaep_demo_1MB_gzip.bin
+🛡️ Server: Wrapping CEK with client's public key using JWE (alg: RSA-OAEP-256)...
+🛡️ Server: JWE Payload to be encrypted: {
+  "v": "0.5",
+  "k": "5pdvuSFvkYj8xl0VJZo5lNREMN4-uCqO9armoDZ2yvM",
+  "cipher": "secretstream_xchacha20poly1305",
+  "chunk": 1048576,
+  "content_type": "application/fhir+ndjson",
+  "content_encoding": "gzip"
+}
+🛡️ Server: CEK wrapped in JWE compact serialization.
+🛡️ Server: Compact JWE: eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiY2xpZW50LXJzYTMwNzIta2V5LTJ5NjJjanE5IiwiY3R5IjoiYXBwbGljYXRpb24vanNvbiJ9.K33rbOnPtB612JOOPcMseWe9s_1zoRMr0OoU4kiFNm8D117iFIcPdUpVlZ-NhvUr2dmLJTG40MVKxpxTqRs5-kF1nExSAB-MZXENITc_MCzPxGhgW9kq2gSw9KGHFJX8f3y6b-rmbqAfiC4gN7EuLK7onBDKbF5WBT37QvA22N8anrlMKfOI9BeF3t-WOBai8TavDFKsUGN_uM5fe-T26p90T1pZcX6toIxIpHyfFmJSI2Cl2zoIUEBy5OBFEvEtQtgNZOIu8TBDZFVX_aolt9JHa-Ww5b32EXubGwidRhPWbUPyIfX_vutMOkdWeyiEa0zJfVy_qbZlMJjHB5RZC6GG2LFPlHjwdN5heeYi7VEcmlaIGvVNf75dApKbQJ-XY8nrgQ2KOVTNYbhW9PnIIdH7gi7rtdm8ah3nGNXTbGjfJ6LhkstEsaUC3xoPQBXPjzCEmWKoQu7i8g9YNJey2djc8MJEK_BYFoJqTSkMEitlS-O_0AiOsew6DOpipvos.ukN3jTw9Y5cJxJP3.YEcDIlZ0kaWY580dKeId421MCoBthmxKws1joxI6f4wgN3omRaJklTr634qkh2R7Eq0Fto17nCqv_CLqW5xL36cAb5T_ZayNH2nX3fp2tLIyVW3UyoEgx9bfAkpswo3am4yhjQ6ISd9Tc8sCy2nDsNyxHGMvpOtXg7EVqgmr1OQ9R2fLl-ZHRlrTIcFxzFO3crg87jOLl5TKNYVNkwuOi6CVefAjSkGwaAbmTXrlPtl-j6pM0j2hicLC.jPCVrGoHKCAVUWjE2taTUA
+🛡️ Server: Creating Bulk Export manifest RSA-OAEP Demo - 1MB_GZIP Stream...
+🛡️ Server: Manifest created: {
+  "transactionTime": "2025-05-07T17:55:06.646Z",
+  "request": "https://example.com/fhir/Patient/$export?_type=Patient,Observation&run=RSA-OAEP Demo - 1MB_GZIP Stream",
+  "requiresAccessToken": true,
+  "output": [
+    {
+      "type": "Patient",
+      "url": "http://localhost:34819/download/encrypted_stream_rsa-oaep_demo_1MB_gzip.bin",
+      "extension": {
+        "http://argo.run/bulk-export-decryption-key": "eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiY2xpZW50LXJzYTMwNzIta2V5LTJ5NjJjanE5IiwiY3R5IjoiYXBwbGljYXRpb24vanNvbiJ9.K33rbOnPtB612JOOPcMseWe9s_1zoRMr0OoU4kiFNm8D117iFIcPdUpVlZ-NhvUr2dmLJTG40MVKxpxTqRs5-kF1nExSAB-MZXENITc_MCzPxGhgW9kq2gSw9KGHFJX8f3y6b-rmbqAfiC4gN7EuLK7onBDKbF5WBT37QvA22N8anrlMKfOI9BeF3t-WOBai8TavDFKsUGN_uM5fe-T26p90T1pZcX6toIxIpHyfFmJSI2Cl2zoIUEBy5OBFEvEtQtgNZOIu8TBDZFVX_aolt9JHa-Ww5b32EXubGwidRhPWbUPyIfX_vutMOkdWeyiEa0zJfVy_qbZlMJjHB5RZC6GG2LFPlHjwdN5heeYi7VEcmlaIGvVNf75dApKbQJ-XY8nrgQ2KOVTNYbhW9PnIIdH7gi7rtdm8ah3nGNXTbGjfJ6LhkstEsaUC3xoPQBXPjzCEmWKoQu7i8g9YNJey2djc8MJEK_BYFoJqTSkMEitlS-O_0AiOsew6DOpipvos.ukN3jTw9Y5cJxJP3.YEcDIlZ0kaWY580dKeId421MCoBthmxKws1joxI6f4wgN3omRaJklTr634qkh2R7Eq0Fto17nCqv_CLqW5xL36cAb5T_ZayNH2nX3fp2tLIyVW3UyoEgx9bfAkpswo3am4yhjQ6ISd9Tc8sCy2nDsNyxHGMvpOtXg7EVqgmr1OQ9R2fLl-ZHRlrTIcFxzFO3crg87jOLl5TKNYVNkwuOi6CVefAjSkGwaAbmTXrlPtl-j6pM0j2hicLC.jPCVrGoHKCAVUWjE2taTUA"
+      }
+    }
+  ]
+}
+📄 Client: Resolving manifest for file type "Patient"...
+📄 Client: JWE string extracted from manifest: eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiY2xpZW50LXJzYTMwNzIta2V5LTJ5NjJjanE5IiwiY3R5IjoiYXBwbGljYXRpb24vanNvbiJ9.K33rbOnPtB612JOOPcMseWe9s_1zoRMr0OoU4kiFNm8D117iFIcPdUpVlZ-NhvUr2dmLJTG40MVKxpxTqRs5-kF1nExSAB-MZXENITc_MCzPxGhgW9kq2gSw9KGHFJX8f3y6b-rmbqAfiC4gN7EuLK7onBDKbF5WBT37QvA22N8anrlMKfOI9BeF3t-WOBai8TavDFKsUGN_uM5fe-T26p90T1pZcX6toIxIpHyfFmJSI2Cl2zoIUEBy5OBFEvEtQtgNZOIu8TBDZFVX_aolt9JHa-Ww5b32EXubGwidRhPWbUPyIfX_vutMOkdWeyiEa0zJfVy_qbZlMJjHB5RZC6GG2LFPlHjwdN5heeYi7VEcmlaIGvVNf75dApKbQJ-XY8nrgQ2KOVTNYbhW9PnIIdH7gi7rtdm8ah3nGNXTbGjfJ6LhkstEsaUC3xoPQBXPjzCEmWKoQu7i8g9YNJey2djc8MJEK_BYFoJqTSkMEitlS-O_0AiOsew6DOpipvos.ukN3jTw9Y5cJxJP3.YEcDIlZ0kaWY580dKeId421MCoBthmxKws1joxI6f4wgN3omRaJklTr634qkh2R7Eq0Fto17nCqv_CLqW5xL36cAb5T_ZayNH2nX3fp2tLIyVW3UyoEgx9bfAkpswo3am4yhjQ6ISd9Tc8sCy2nDsNyxHGMvpOtXg7EVqgmr1OQ9R2fLl-ZHRlrTIcFxzFO3crg87jOLl5TKNYVNkwuOi6CVefAjSkGwaAbmTXrlPtl-j6pM0j2hicLC.jPCVrGoHKCAVUWjE2taTUA
+📄 Client: Unwrapping CEK from JWE (expecting alg: RSA-OAEP-256)...
+📄 Client: Received Compact JWE for unwrapping: eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiY2xpZW50LXJzYTMwNzIta2V5LTJ5NjJjanE5IiwiY3R5IjoiYXBwbGljYXRpb24vanNvbiJ9.K33rbOnPtB612JOOPcMseWe9s_1zoRMr0OoU4kiFNm8D117iFIcPdUpVlZ-NhvUr2dmLJTG40MVKxpxTqRs5-kF1nExSAB-MZXENITc_MCzPxGhgW9kq2gSw9KGHFJX8f3y6b-rmbqAfiC4gN7EuLK7onBDKbF5WBT37QvA22N8anrlMKfOI9BeF3t-WOBai8TavDFKsUGN_uM5fe-T26p90T1pZcX6toIxIpHyfFmJSI2Cl2zoIUEBy5OBFEvEtQtgNZOIu8TBDZFVX_aolt9JHa-Ww5b32EXubGwidRhPWbUPyIfX_vutMOkdWeyiEa0zJfVy_qbZlMJjHB5RZC6GG2LFPlHjwdN5heeYi7VEcmlaIGvVNf75dApKbQJ-XY8nrgQ2KOVTNYbhW9PnIIdH7gi7rtdm8ah3nGNXTbGjfJ6LhkstEsaUC3xoPQBXPjzCEmWKoQu7i8g9YNJey2djc8MJEK_BYFoJqTSkMEitlS-O_0AiOsew6DOpipvos.ukN3jTw9Y5cJxJP3.YEcDIlZ0kaWY580dKeId421MCoBthmxKws1joxI6f4wgN3omRaJklTr634qkh2R7Eq0Fto17nCqv_CLqW5xL36cAb5T_ZayNH2nX3fp2tLIyVW3UyoEgx9bfAkpswo3am4yhjQ6ISd9Tc8sCy2nDsNyxHGMvpOtXg7EVqgmr1OQ9R2fLl-ZHRlrTIcFxzFO3crg87jOLl5TKNYVNkwuOi6CVefAjSkGwaAbmTXrlPtl-j6pM0j2hicLC.jPCVrGoHKCAVUWjE2taTUA
+📄 Client: Decrypted JWE Payload: {
+  "v": "0.5",
+  "k": "5pdvuSFvkYj8xl0VJZo5lNREMN4-uCqO9armoDZ2yvM",
+  "cipher": "secretstream_xchacha20poly1305",
+  "chunk": 1048576,
+  "content_type": "application/fhir+ndjson",
+  "content_encoding": "gzip"
+}
+📄 Client: Unwrapped CEK (base64url): 5pdvuSFvkYj8xl0VJZo5lNREMN4-uCqO9armoDZ2yvM (DEMO ONLY - DO NOT LOG IN PROD)
+📄 Client: CEK successfully unwrapped (JWE alg: RSA-OAEP-256). ChunkSize: 1048576, ContentType: application/fhir+ndjson, ContentEncoding: gzip
+🔓 Decrypting to ./decrypted_stream_rsa-oaep_demo_1MB_gzip.ndjson.gz (chunkSize: 1048576 B, encoding: gzip)
+🔓 Decryption complete: ./decrypted_stream_rsa-oaep_demo_1MB_gzip.ndjson.gz
+✅ SUCCESS (RSA-OAEP Demo - 1MB_GZIP Stream): Decrypted file matches original (gzipped source). Encrypted size: 173.92 KB
+--- RSA-OAEP Demo - 1MB_GZIP Streaming File Flow Complete (SUCCESS in Enc: 2.25 ms, Dec: 2.58 ms, Enc Size: 173.92 KB) ---
+
+
+🎉 All Demo Flows and Performance Tests Complete 🎉
+
+📊 Timing Summary Table 📊
+------------------------------------------------------------------------------------------------------------
+| Test Case                               | Encrypted Size     | Enc Time (ms) | Dec Time (ms) | Status    |
+|-----------------------------------------|--------------------|---------------|---------------|-----------|
+| ECDH-ES Demo - 1MB                      |         1023.81 KB |         25.03 |         36.93 | ✅ SUCCESS |
+| RSA-OAEP Demo - 1MB                     |         1023.81 KB |         11.52 |         12.27 | ✅ SUCCESS |
+| ECDH-ES Demo - 1MB_GZIP                 |          173.92 KB |          2.72 |          2.63 | ✅ SUCCESS |
+| RSA-OAEP Demo - 1MB_GZIP                |          173.92 KB |          2.25 |          2.58 | ✅ SUCCESS |
+------------------------------------------------------------------------------------------------------------

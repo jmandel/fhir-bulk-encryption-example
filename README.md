@@ -2,7 +2,7 @@
 
 **Protocol Version 0.5 – 6 May 2025**
 
-This document describes how to encrypt FHIR bulk‑export NDJSON files end‑to‑end and securely convey decryption keys in‑band via JWE, using the client’s registered public key.
+This document describes how to encrypt FHIR bulk‑export NDJSON files end‑to‑end and securely convey decryption keys in‑band via JWE, using the client's registered public key.
 
 ---
 
@@ -19,9 +19,9 @@ This document describes how to encrypt FHIR bulk‑export NDJSON files end‑to�
 
 1. **Generate CEK**: For each NDJSON file, generate a fresh symmetric key (the CEK) for `crypto_secretstream_xchacha20poly1305`. Optionally **gzip the NDJSON** file before encryption (recommended). You may generate one CEK per manifest and reuse it across all files.
 
-2. **Encrypt Data**: Stream‑encrypt each file using libsodium’s SecretStream API, producing a public header + ciphertext chunks.
+2. **Encrypt Data**: Stream‑encrypt each file using libsodium's SecretStream API, producing a public header + ciphertext chunks.
 
-3. **Wrap CEK in JWE**: Create a compact JWE whose payload contains the CEK and related parameters, encrypted under the client’s public key (`use": "enc"`) from their registered JWK set.
+3. **Wrap CEK in JWE**: Create a compact JWE whose payload contains the CEK and related parameters, encrypted under the client's public key (`use": "enc"`) from their registered JWK set.
 
 4. **Publish Manifest**: Include the JWE as an `extension` on each file entry (or at top‑level for per‑batch keys) in the bulk‑export manifest.
 
@@ -33,17 +33,17 @@ This document describes how to encrypt FHIR bulk‑export NDJSON files end‑to�
 
 * **Algorithm**: `crypto_secretstream_xchacha20poly1305` (libsodium)
 * **Header (H)**: 24 bytes at file start (public)
-* **Chunk Size (C)**: Default 1 MiB, adjustable via JWE payload
-* **Chunk Format**: Each chunk = up to C plaintext bytes + 17‑byte overhead (1‑byte tag + 16‑byte MAC); final tail = 17‑byte final‑tag.
+* **Chunk Size (C)**: Default 1 MiB, adjustable via JWE payload
+* **Chunk Format**: Each chunk = up to C plaintext bytes + 17-byte overhead (1-byte tag + 16-byte MAC); the final chunk is marked with the FINAL tag.
 
 **File Structure**:
 
 ```
-offset    size        description
-0         24 B        header H (public)
-24        N×(C+17)    intermediate ciphertext chunks
-...       ≤ C+17      final ciphertext chunk
-...       17 B        final authentication tag
+offset    size                    description
+0         24 B                    header H (public)
+24        sequence of ciphertext chunks;
+                                 each chunk = up to C plaintext bytes + 17-byte overhead;
+                                 the last chunk (≤ C+17 bytes) includes the FINAL tag
 ```
 
 ---
@@ -73,11 +73,11 @@ Use either RSA‑OAEP‑256 or ECDH‑ES+A256KW for key wrapping, depending on w
 | --------- | ---------------------------------------------------------------- |
 | `alg`     | Key management algorithm: `RSA-OAEP-256` or `ECDH-ES+A256KW`     |
 | `enc`     | Content encryption: `A256GCM`                                    |
-| `kid`     | Key ID matching the client’s registered JWK entry (`use":"enc"`) |
+| `kid`     | Key ID matching the client's registered JWK entry (`use":"enc"`) |
 | `cty`     | `application/json`                                               |
 | `epk`     | Ephemeral public key (for ECDH‑ES+A256KW)                        |
 
-The JWE is serialized in compact form and placed into the manifest’s `extension`.
+The JWE is serialized in compact form and placed into the manifest's `extension`.
 
 ---
 
@@ -132,13 +132,13 @@ Servers pick the first JWK matching `use":"enc"` and a supported `alg`.
 ---
 ## 7. Operational Notes
 
-* **Compression Support**: Servers SHOULD apply GZIP (RFC 1952) before encryption and indicate this in the `content_encoding` JWE claim
+* **Compression Support**: Servers SHOULD apply GZIP (RFC 1952) before encryption and indicate this in the `content_encoding` JWE claim
 * **Resuming HTTP Requests**: Clients may resume downloads at chunk boundaries via HTTP Range requests.
 
 ---
 ## 8. Reference Implementation (TypeScript/Bun)
 
-For a minimal Bun‑based reference for streaming encryption and decryption using libsodium’s SecretStream API, see [`index.ts`](./index.ts).
+For a minimal Bun‑based reference for streaming encryption and decryption using libsodium's SecretStream API, see [`index.ts`](./index.ts).
 
 
 ```bash

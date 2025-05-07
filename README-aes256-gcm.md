@@ -32,7 +32,8 @@ This README describes how to perform end‑to‑end encryption of FHIR Bulk‑Ex
      "v": "0.5",
      "k": "<base64url-CEK>",
      "hash": "<base64url-SHA256-hash-of-plaintext>",
-     "cty": "application/fhir+ndjson"
+     "content_type": "application/fhir+ndjson",
+     "content_encoding": "gzip"
    }
    ```
 
@@ -87,12 +88,12 @@ The JWE plaintext (payload) securely carries the Content Encryption Key (CEK) an
   "v": "0.5",
   "k": "<base64url-encoded CEK>",
   "hash": "<base64url-encoded SHA-256 hash>",
-  "cty": "application/fhir+ndjson",
-  "enc_opt": "gzip"
+  "content_type": "application/fhir+ndjson",
+  "content_encoding": "gzip"
 }
 ```
 
-*(Note: `cty` here refers to the original content type of the bulk data, while the JWE Protected Header's `cty` is `application/json` indicating the JWE payload itself is JSON).* 
+*(Note: `content_type` here refers to the original content type of the bulk data, while the JWE Protected Header's `cty` is `application/json` indicating the JWE payload itself is JSON).* 
 
 ### 4.2 JWE Protected Header
 
