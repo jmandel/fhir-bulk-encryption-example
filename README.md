@@ -119,9 +119,9 @@ Reuse one CEK across all files; include JWE at the top level:
 
 ---
 
-## 6. JWKS Publishing
+## 6. JWKS Representation of Client Keys
 
-Clients MUST publish an encryption key in their JWKS with fields:
+Clients MUST include an encryption key in their JWKS with fields:
 
 * `use`: `"enc"`
 * `alg`: `"RSA-OAEP-256"` or `"ECDH-ES+A256KW"`
@@ -130,26 +130,15 @@ Clients MUST publish an encryption key in their JWKS with fields:
 Servers pick the first JWK matching `use":"enc"` and a supported `alg`.
 
 ---
+## 7. Operational Notes
 
-## 7. Compression Support
-
-Within the JWE payload, `content_encoding` indicates pre‑encryption compression:
-
-* Absent ⇒ no compression
-* `"gzip"` ⇒ apply GZIP (RFC 1952) before encryption
-
-Clients MUST decompress after decryption if indicated.
+* **Compression Support**: Servers SHOULD apply GZIP (RFC 1952) before encryption and indicate this in the `content_encoding` JWE claim
+* **Resuming HTTP Requests**: Clients may resume downloads at chunk boundaries via HTTP Range requests.
 
 ---
+## 8. Reference Implementation (TypeScript/Bun)
 
-## 8. Operational Notes
-
-* **Resuming**: Clients may resume downloads at chunk boundaries via HTTP Range requests.
-
----
-## 7 Reference Implementation (TypeScript/Bun)
-
-For a minimal Bun‑based reference for streaming encryption and decryption using libsodium’s SecretStream API, see `index.ts`(./index.ts).
+For a minimal Bun‑based reference for streaming encryption and decryption using libsodium’s SecretStream API, see [`index.ts`](./index.ts).
 
 
 ```bash
