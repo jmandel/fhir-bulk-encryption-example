@@ -102,7 +102,7 @@ Add an `extension` to each file entry:
 
 Reuse one CEK across all files; include JWE at the top level:
 
-```json
+```js
 {
   "transactionTime": "...",
   "request": "...",
