@@ -1,22 +1,140 @@
 import * as jose from 'jose';
 import sodium from 'libsodium-wrappers';
 
+function concatUint8(a: Uint8Array, b: Uint8Array): Uint8Array {
+  const out = new Uint8Array(a.length + b.length);
+  out.set(a, 0);
+  out.set(b, a.length);
+  return out;
+}
+
+async function encryptFileStream(
+  plainPath: string,
+  encPath: string,
+  key: Uint8Array,
+  chunkSizeForPush: number,
+  _contentType: string,
+  _contentEncoding?: "gzip"
+) {
+  console.log(`🔐 Encrypting ${plainPath} → ${encPath}`);
+  await sodium.ready;
+  const writer = Bun.file(encPath).writer();
+  const reader = Bun.file(plainPath).stream().getReader();
+  const { header, state } = sodium.crypto_secretstream_xchacha20poly1305_init_push(key);
+  await writer.write(header);
+
+  const chunkSize = chunkSizeForPush;
+  let buffer: Uint8Array = new Uint8Array(0);
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (value && value.length) {
+        buffer = concatUint8(buffer, value);
+      }
+      // process full-size plaintext chunks
+      while (buffer.length >= chunkSize) {
+        const plaintextChunk = buffer.subarray(0, chunkSize);
+        buffer = buffer.subarray(chunkSize);
+        const encryptedChunk = sodium.crypto_secretstream_xchacha20poly1305_push(
+          state as any,
+          plaintextChunk as any,
+          null,
+          sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE
+        );
+        await writer.write(new Uint8Array(encryptedChunk));
+      }
+      if (done) break;
+    }
+
+    // write remaining data + TAG_FINAL
+    const finalEncrypted = sodium.crypto_secretstream_xchacha20poly1305_push(
+      state as any,
+      buffer as any,
+      null,
+      sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
+    );
+    await writer.write(new Uint8Array(finalEncrypted));
+  } finally {
+    reader.releaseLock();
+    await writer.end();
+  }
+  console.log(`🔐 Encryption complete: ${encPath}`);
+}
+
+async function decryptFileStream(
+  encryptedStreamHttpBody: ReadableStream<Uint8Array>,
+  decPath: string,
+  cek: Uint8Array,
+  chunkSizeFromJWE: number, 
+  _contentTypeFromJWE: string, 
+  contentEncodingFromJWE?: "gzip"
+) {
+  console.log(`🔓 Decrypting to ${decPath} (chunkSize: ${chunkSizeFromJWE} B, encoding: ${contentEncodingFromJWE || 'none'})`);
+
+  const reader = encryptedStreamHttpBody.getReader();
+  // 1. Read and initialize header
+  const { value: firstChunk, done } = await reader.read();
+  if (done || !firstChunk || firstChunk.length < sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES) {
+    throw new Error('Incomplete header');
+  }
+  const header = firstChunk.subarray(0, sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES);
+  const state = sodium.crypto_secretstream_xchacha20poly1305_init_pull(header, cek);
+  let buffer = firstChunk.subarray(sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES);
+
+  const writer = Bun.file(decPath).writer();
+  const C = chunkSizeFromJWE;
+  const ABYTES = sodium.crypto_secretstream_xchacha20poly1305_ABYTES;
+
+  // 2. Process full chunks
+  while (true) {
+    while (buffer.length < C + ABYTES + ABYTES) {
+      const { value: nextChunk, done: chunkDone } = await reader.read();
+      if (chunkDone) break;
+      if (nextChunk) {
+        buffer = concatUint8(buffer, nextChunk as Uint8Array);
+      }
+    }
+    if (buffer.length >= C + ABYTES) {
+      const part = buffer.subarray(0, C + ABYTES);
+      buffer = buffer.subarray(C + ABYTES);
+      const { message } = sodium.crypto_secretstream_xchacha20poly1305_pull(state, part);
+      if (message && message.length) {
+        await writer.write(new Uint8Array(message));
+      }
+      continue;
+    }
+    break;
+  }
+
+  // 3. Final encrypted chunk (body + tag)
+  if (buffer.length < ABYTES) {
+    throw new Error('Missing final tag');
+  }
+  const { message: finalMsg, tag: finalTag } = sodium.crypto_secretstream_xchacha20poly1305_pull(
+    state,
+    buffer
+  );
+  if (finalMsg && finalMsg.length) {
+    await writer.write(new Uint8Array(finalMsg));
+  }
+  if (finalTag !== sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL) {
+    throw new Error('Invalid final tag');
+  }
+  await writer.end();
+    console.log(`🔓 Decryption complete: ${decPath}`);
+}
+
 // --- Constants ---
 const BULK_EXPORT_DECRYPTION_KEY_URL = "http://argo.run/bulk-export-decryption-key";
 const NDJSON_CIPHER_ALGORITHM = "secretstream_xchacha20poly1305";
 const DEFAULT_PLAINTEXT_CHUNK_SIZE = 1 * 1024 * 1024; // 1 MiB
 const DEFAULT_CONTENT_TYPE = "application/fhir+ndjson"; // Changed to FHIR specific type
 
-const SAMPLE_NDJSON_DATA = [
-  { resourceType: "Patient", id: "123", name: [{ family: "Doe", given: ["John"] }] },
-  { resourceType: "Observation", id: "obs1", status: "final", code: { text: "Vital Signs" }, subject: { reference: "Patient/123" } },
-].map(obj => JSON.stringify(obj)).join('\n');
-
 // --- Sample Data for Patient Generation ---
 const SAMPLE_SURNAMES = ["Smith", "Jones", "Williams", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin"];
 const SAMPLE_GIVEN_NAMES = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph"];
 const SAMPLE_IDENTIFIER_SYSTEMS = [
-  "urn:oid:2.16.840.1.113883.4.6", // NPI
+  "urn:oid:2.16.840.1.113883.4.6",
   "http://myhospital.org/mrn",
   "urn:oid:1.2.3.4.5.6.7",
   "http://example.com/fhir/sid/patient-id",
@@ -52,7 +170,7 @@ function generateRandomFhirPatient(): any {
     }],
     gender: Math.random() > 0.5 ? "male" : "female",
     birthDate: birthDate,
-    active: Math.random() > 0.1 // Most patients are active
+    active: Math.random() > 0.1
   };
 }
 // --- End Sample Data ---
@@ -107,23 +225,21 @@ async function generateClientECKeys(): Promise<ClientKeys> {
 }
 
 async function generateClientRSAKeys(): Promise<ClientKeys> {
-  console.log("🔑 Client: Generating RSA 3072-bit key pair (for RSA-OAEP-256)...");
-  // 'PS384' generates an RSA key. Modulus length is important.
-  // extractable: true is crucial for exporting the private key.
-  const { publicKey, privateKey } = await jose.generateKeyPair('PS384', { modulusLength: 3072, extractable: true });
+  console.log("🔑 Client: Generating RSA-OAEP-256 3072-bit key pair...");
+  // Use RSA-OAEP-256 for encryption key wrap (not PS384)
+  const { publicKey, privateKey } = await jose.generateKeyPair(
+    'RSA-OAEP-256',
+    { modulusLength: 3072, extractable: true }
+  );
   
   const publicJwk = await jose.exportJWK(publicKey) as any;
   publicJwk.kid = `client-rsa3072-key-${Math.random().toString(36).substring(2, 10)}`;
-  publicJwk.alg = 'RSA-OAEP-256'; // Indicate to server the JWE alg for encryption
-  publicJwk.use = "enc";
-  publicJwk.exp = Math.floor(Date.now() / 1000) + (24 * 60 * 60); // Expires in 1 day
+  publicJwk.alg = 'RSA-OAEP-256';
+  publicJwk.use = 'enc';
+  publicJwk.exp = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
   
   const privateJwk = await jose.exportJWK(privateKey) as any;
-  privateJwk.kid = publicJwk.kid; // Keep kid consistent
-  // For RSA, the private JWK often doesn't need an 'alg' if its kty is "RSA"
-  // and its usage for decryption is inferred by the JWE alg header.
-  // However, setting it can sometimes help certain JOSE implementations.
-  // We will rely on importing it with the correct JWE alg in unwrapCEK.
+  privateJwk.kid = publicJwk.kid;
 
   console.log(`🔑 Client (RSA): Generated Public JWK: ${JSON.stringify(publicJwk)}`);
   return { publicKey, privateKey, publicJwk, privateJwk, keyType: 'RSA' };
@@ -150,7 +266,8 @@ async function wrapCEK(
   jweEnc: 'A256GCM' = 'A256GCM'
 ): Promise<string> {
   console.log(`🛡️ Server: Wrapping CEK with client's public key using JWE (alg: ${jweAlg})...`);
-  const jwePayload: { k: string; cipher: string; chunk: number; content_type: string; content_encoding?: string } = {
+  const jwePayload: { v: string; k: string; cipher: string; chunk: number; content_type: string; content_encoding?: string } = {
+    v: "0.5",
     k: jose.base64url.encode(cek),
     cipher: NDJSON_CIPHER_ALGORITHM,
     chunk: plaintextChunkSize,
@@ -294,7 +411,7 @@ async function main() {
     20 * 1024 * 1024, 
   ];
 
-  const testResults: Array<{name: string, durationMs: number, success: boolean, encryptedSize?: number}> = [];
+  const testResults: Array<{name: string, encryptionMs: number, decryptionMs: number, success: boolean, encryptedSize?: number}> = [];
 
   for (const size of fileSizesToTest) {
     const sizeString = `${(size / (1024 * 1024)).toFixed(0)}MB`;
@@ -314,17 +431,18 @@ async function main() {
 
   // --- Print Timing Table ---
   console.log("\n📊 Timing Summary Table 📊");
-  console.log("------------------------------------------------------------------------------------------------");
-  console.log("| Test Case                               | Encrypted Size     | Duration (ms) | Status    |");
-  console.log("|-----------------------------------------|--------------------|---------------|-----------|");
+  console.log("------------------------------------------------------------------------------------------------------------");
+  console.log("| Test Case                               | Encrypted Size     | Enc Time (ms) | Dec Time (ms) | Status    |");
+  console.log("|-----------------------------------------|--------------------|---------------|---------------|-----------|");
   for (const result of testResults) {
     const nameStr = result.name.padEnd(39);
     const encSizeStr = (result.encryptedSize !== undefined ? formatBytes(result.encryptedSize) : 'N/A').padStart(18);
-    const durationStr = result.durationMs.toFixed(2).padStart(13);
+    const encDurationStr = result.encryptionMs.toFixed(2).padStart(13);
+    const decDurationStr = result.decryptionMs.toFixed(2).padStart(13);
     const statusStr = (result.success ? "✅ SUCCESS" : "❌ FAILURE").padEnd(9);
-    console.log(`| ${nameStr} | ${encSizeStr} | ${durationStr} | ${statusStr} |`);
+    console.log(`| ${nameStr} | ${encSizeStr} | ${encDurationStr} | ${decDurationStr} | ${statusStr} |`);
   }
-  console.log("------------------------------------------------------------------------------------------------");
+  console.log("------------------------------------------------------------------------------------------------------------");
 }
 
 main().catch(error => {
@@ -333,9 +451,6 @@ main().catch(error => {
 });
 
 // --- Streaming File Encryption/Decryption Demo (Bun File I/O) ---
-
-const CHUNK_SIZE = 64 * 1024; // 64 KiB plaintext chunk
-// const PLAIN_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100 MiB - Will be parameterized
 
 async function generateRandomPlaintextFile(path: string, sizeBytes: number) {
   console.log(`📂 Generating FHIR Patient NDJSON file ${path} of approx. size ${formatBytes(sizeBytes)}...`);
@@ -358,8 +473,8 @@ async function generateRandomPlaintextFile(path: string, sizeBytes: number) {
         break; 
     }
 
-    await writer.write(patientBytes);
-    await writer.write(newline);
+    writer.write(patientBytes);
+    writer.write(newline);
     writtenBytes += patientBytes.length + newline.length;
   }
   await writer.end();
@@ -385,140 +500,12 @@ async function ensurePlaintextAndGzippedFiles(baseOutputName: string, sizeBytes:
   // Get gzipped size if it exists
   if (await Bun.file(filePathGzipped).exists()) {
     gzippedSize = await Bun.file(filePathGzipped).size;
-  }
+}
   return { plain: filePathPlain, gzipped: filePathGzipped, gzippedSize };
 }
 
-async function encryptFileStream(
-  plainPath: string,
-  encPath: string,
-  key: Uint8Array,
-  chunkSizeForPush: number,
-  _contentType: string,
-  _contentEncoding?: "gzip"
-) {
-  console.log(`🔐 Encrypting ${plainPath} → ${encPath}`);
-  await sodium.ready;
-  const writer = Bun.file(encPath).writer();
-  const reader = Bun.file(plainPath).stream().getReader();
-  const { header, state } = sodium.crypto_secretstream_xchacha20poly1305_init_push(key);
-  await writer.write(header);
 
-  const chunkSize = chunkSizeForPush;
-  let buffer = new Uint8Array(0);
-  try {
-    // Read source in streaming fashion and chunk into fixed-size segments
-    while (true) {
-      const { done, value } = await reader.read();
-      if (value && value.length) {
-        buffer = new Uint8Array([...buffer, ...value]);
-      }
-      // Emit full chunks
-      while (buffer.length >= chunkSize) {
-        const plaintextChunk = buffer.subarray(0, chunkSize);
-        buffer = buffer.subarray(chunkSize);
-        const encryptedChunk = sodium.crypto_secretstream_xchacha20poly1305_push(
-          state,
-          plaintextChunk,
-          null,
-          sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE
-        );
-        await writer.write(encryptedChunk);
-      }
-      if (done) break;
-    }
-    // Emit any remaining partial chunk
-    if (buffer.length > 0) {
-      const encryptedChunk = sodium.crypto_secretstream_xchacha20poly1305_push(
-        state,
-        buffer,
-        null,
-        sodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE
-      );
-      await writer.write(encryptedChunk);
-    }
-    // Finalize with TAG_FINAL
-    const finalChunk = sodium.crypto_secretstream_xchacha20poly1305_push(
-      state,
-      new Uint8Array(0),
-      null,
-      sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
-    );
-    await writer.write(finalChunk);
-  } finally {
-    reader.releaseLock();
-    await writer.end();
-  }
-  console.log(`🔐 Encryption complete: ${encPath}`);
-}
-
-async function decryptFileStream(
-  encryptedStreamHttpBody: ReadableStream<Uint8Array>,
-  decPath: string,
-  cek: Uint8Array,
-  chunkSizeFromJWE: number,
-  _contentTypeFromJWE: string,
-  contentEncodingFromJWE?: "gzip"
-) {
-  console.log(`🔓 Decrypting to ${decPath} (chunkSize: ${chunkSizeFromJWE} B, encoding: ${contentEncodingFromJWE || 'none'})`);
-
-  const reader = encryptedStreamHttpBody.getReader();
-  // 1. Read and initialize header
-  const { value: firstChunk, done } = await reader.read();
-  if (done || !firstChunk || firstChunk.length < sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES) {
-    throw new Error('Incomplete header');
-  }
-  const header = firstChunk.subarray(0, sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES);
-  const state = sodium.crypto_secretstream_xchacha20poly1305_init_pull(header, cek);
-  let buffer = firstChunk.subarray(sodium.crypto_secretstream_xchacha20poly1305_HEADERBYTES);
-
-  const writer = Bun.file(decPath).writer();
-  const C = chunkSizeFromJWE;
-  const ABYTES = sodium.crypto_secretstream_xchacha20poly1305_ABYTES;
-
-  // 2. Process full chunks
-  while (true) {
-    while (buffer.length < C + ABYTES + ABYTES) {
-      const { value: nextChunk, done: chunkDone } = await reader.read();
-      if (chunkDone) break;
-      if (nextChunk) {
-        buffer = new Uint8Array([...buffer, ...nextChunk]);
-      }
-    }
-    if (buffer.length >= C + ABYTES) {
-      const part = buffer.subarray(0, C + ABYTES);
-      buffer = buffer.subarray(C + ABYTES);
-      const { message } = sodium.crypto_secretstream_xchacha20poly1305_pull(state, part);
-      await writer.write(message);
-      continue;
-    }
-    break;
-  }
-
-  // 3. Final body + tail
-  if (buffer.length < ABYTES) {
-    throw new Error('Missing final tag');
-  }
-  const finalBodySize = buffer.length - ABYTES;
-  if (finalBodySize > 0) {
-    const { message } = sodium.crypto_secretstream_xchacha20poly1305_pull(
-      state,
-      buffer.subarray(0, finalBodySize)
-    );
-    await writer.write(message);
-  }
-  const { tag } = sodium.crypto_secretstream_xchacha20poly1305_pull(
-    state,
-    buffer.subarray(finalBodySize)
-  );
-  if (tag !== sodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL) {
-    throw new Error('Invalid final tag');
-  }
-  await writer.end();
-  console.log(`🔓 Decryption complete: ${decPath}`);
-}
-
-async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fileSizeBytes: number, useGzip: boolean): Promise<{name: string, durationMs: number, success: boolean, encryptedSize?: number}> {
+async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fileSizeBytes: number, useGzip: boolean): Promise<{name: string, encryptionMs: number, decryptionMs: number, success: boolean, encryptedSize?: number}> {
   const sizeSuffix = `${(fileSizeBytes / (1024 * 1024)).toFixed(0)}MB`;
   const gzipSuffix = useGzip ? "_GZIP" : "";
   const fullDemoName = `${demoName} - ${sizeSuffix}${gzipSuffix}`;
@@ -546,6 +533,8 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
   let success = false;
   let server: import('bun').Server | undefined = undefined;
   let encryptedFileSize: number | undefined = undefined; // Variable to store encrypted size
+  let encryptionDurationMs = 0;
+  let decryptionDurationMs = 0;
 
   try {
     const sourceFiles = await ensurePlaintextAndGzippedFiles(baseOutputNameForSource, fileSizeBytes);
@@ -565,15 +554,17 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
       console.log(`[RUN] Non-GZIP mode: JWE chunk parameter set to fixed size: ${jweChunkParameter} B`);
     }
 
+    const encStartTime = performance.now();
   await encryptFileStream(
-      actualSourceFileForEncryption, 
+      actualSourceFileForEncryption,
     tmpEnc, 
     cek_K, 
-      FIXED_CHUNK_SIZE_FOR_PUSH, 
+      FIXED_CHUNK_SIZE_FOR_PUSH,
     DEFAULT_CONTENT_TYPE, 
     useGzip ? "gzip" : undefined
   ); 
     encryptedFileSize = await Bun.file(tmpEnc).size; // Get encrypted file size
+    encryptionDurationMs = performance.now() - encStartTime;
 
     const encryptedFileName = `encrypted_export_${runIdentifierSuffix}.bin`;
     server = Bun.serve({ // Assign to server here
@@ -582,7 +573,7 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
       const url = new URL(req.url);
       if (url.pathname === `/download/${encryptedFileName}`) {
         return new Response(Bun.file(tmpEnc), {
-            headers: { "Content-Type": "application/octet-stream", "Content-Disposition": `attachment; filename="${encryptedFileName}"` }
+              headers: { "Content-Type": "application/octet-stream", "Content-Disposition": `attachment; filename="${encryptedFileName}"` }
         });
       }
       return new Response("Not Found", { status: 404 });
@@ -596,14 +587,15 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
 
   const jweAlg = clientKeys.keyType === 'EC' ? 'ECDH-ES+A256KW' : 'RSA-OAEP-256';
     const jweString = await wrapCEK(cek_K, clientKeys.publicJwk, jweAlg, jweChunkParameter, DEFAULT_CONTENT_TYPE, useGzip ? "gzip" : undefined);
-  const manifest = createManifest(encryptedFileUrl, jweString, "Binary", `${fullDemoName} Stream`);
+    const manifest = createManifest(encryptedFileUrl, jweString, "Patient", `${fullDemoName} Stream`);
 
-  const extractedJwe = resolveManifestAndExtractJWE(manifest, "Binary");
+    const extractedJwe = resolveManifestAndExtractJWE(manifest, "Patient");
     if (!extractedJwe) throw new Error("Failed to extract JWE from manifest");
 
   const unwrapped = await unwrapCEK(extractedJwe, clientKeys.privateJwk, jweAlg);
     if (!unwrapped) throw new Error("Failed to unwrap CEK");
 
+    const decStartTime = performance.now();
   const response = await fetch(encryptedFileUrl);
     if (!response.ok || !response.body) throw new Error(`Failed to download encrypted file. Status: ${response.status}`);
 
@@ -611,14 +603,15 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
       response.body, 
       tmpDec, 
       unwrapped.cek, 
-      unwrapped.plaintextChunkSize, 
+      unwrapped.plaintextChunkSize,
       unwrapped.contentType,
       unwrapped.contentEncoding
     );
+    decryptionDurationMs = performance.now() - decStartTime;
 
     const hashOriginal = Bun.hash(await Bun.file(actualSourceFileForEncryption).bytes());
     const hashDec      = Bun.hash(await Bun.file(tmpDec).bytes());
-    
+  
     if (hashOriginal === hashDec) {
       console.log(`✅ SUCCESS (${fullDemoName} Stream): Decrypted file matches original (${useGzip ? 'gzipped source' : 'plain source'}). Encrypted size: ${encryptedFileSize !== undefined ? formatBytes(encryptedFileSize) : 'N/A'}`);
       success = true;
@@ -634,20 +627,20 @@ async function runStreamingFileDemo(clientKeys: ClientKeys, demoName: string, fi
     // No explicit return here, finally block will handle it
   } finally {
     const endTime = performance.now();
-    const durationMs = endTime - startTime;
-    
-    if (server) server.stop(true); 
+    // const durationMs = endTime - startTime; // No longer calculating total duration here
+
+    if (server) server.stop(true);
 
     try {
     if (await Bun.file(tmpEnc).exists()) await Bun.file(tmpEnc).delete();
     if (await Bun.file(tmpDec).exists()) await Bun.file(tmpDec).delete();
     } catch (e:any) {
       console.warn(`🧹 Warning: Error during cleanup for ${fullDemoName}:`, e.message);
-    }
+  }
 
-    console.log(`--- ${fullDemoName} Streaming File Flow Complete (${success ? 'SUCCESS' : 'FAILURE'} in ${durationMs.toFixed(2)} ms, Enc Size: ${encryptedFileSize !== undefined ? formatBytes(encryptedFileSize) : 'N/A'}) ---
+    console.log(`--- ${fullDemoName} Streaming File Flow Complete (${success ? 'SUCCESS' : 'FAILURE'} in Enc: ${encryptionDurationMs.toFixed(2)} ms, Dec: ${decryptionDurationMs.toFixed(2)} ms, Enc Size: ${encryptedFileSize !== undefined ? formatBytes(encryptedFileSize) : 'N/A'}) ---
 `);
-    return { name: fullDemoName, durationMs, success, encryptedSize: encryptedFileSize }; // Return encryptedSize
+    return { name: fullDemoName, encryptionMs: encryptionDurationMs, decryptionMs: decryptionDurationMs, success, encryptedSize: encryptedFileSize }; // Return encryptedSize
   }
 }
 
