@@ -11,6 +11,7 @@ This document describes how to encrypt FHIR bulk‑export NDJSON files end‑to�
 1. **Confidentiality & Integrity**: Ensure exported NDJSON files remain confidential and tamper‑evident on any storage platform.
 2. **In‑Band Key Delivery**: Use a JSON Web Encryption (JWE) structure to deliver the per‑file or per‑batch Content Encryption Key (CEK) directly within the manifest or file entry.
 3. **Compatibility**: Reuse the existing bulk-export manifest format so that clients familiar with the specification can parse and process manifests without structural changes.
+4. **Streaming Efficiency**: Support streaming encryption and decryption of large NDJSON files to minimize total memory usage over arbitrarily large datasets.
 
 ---
 
