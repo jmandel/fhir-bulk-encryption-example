@@ -20,7 +20,7 @@
 
 * **Primitive:** `crypto_secretstream_xchacha20poly1305` (libsodium)
 * **Header H:** 24 bytes at file offset 0.
-* **Chunk size C:** fixed **1 MiB (1 048 576 bytes)** of plaintext per `push()`; final chunk may be shorter.
+* **Chunk size C:** fixed-size chunks of plaintext per `push()`; final chunk may be shorter than C.
 * **Chunk format:** each encrypted chunk = plaintext (≤ C) **+ 17-byte overhead** (1-byte stream tag + 16-byte Poly1305 MAC). Clients verify each chunk’s tag and MAC as they stream.
 
 ### 2.2 Key, Header, Chunk-Size, Media Packaging & Versioning
