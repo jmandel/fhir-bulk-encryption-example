@@ -1,93 +1,105 @@
 # Optional End-to-End Encryption for FHIR Bulk Export
 
-**Protocol draft v0.5 – 6 May 2025**
+**Protocol Version 0.5 – 6 May 2025**
+
+This document describes how to encrypt FHIR bulk‑export NDJSON files end‑to‑end and securely convey decryption keys in‑band via JWE, using the client’s registered public key.
 
 ---
 
-## 1 Goals
+## 1. Goals
 
-| #   | Goal                                                                             |
-| --- | -------------------------------------------------------------------------------- |
-| G-1 | Keep exported NDJSON files confidential and tamper-evident on untrusted storage. |
-| G-2 | Deliver the symmetric content-encryption key (CEK) in-band via JWE and JWKS.     |
-| G-3 | Preserve backward compatibility—legacy clients ignore the added `extension`.     |
+1. **Confidentiality & Integrity**: Ensure exported NDJSON files remain confidential and tamper‑evident on any storage platform.
+2. **In‑Band Key Delivery**: Use a JSON Web Encryption (JWE) structure to deliver the per‑file or per‑batch Content Encryption Key (CEK) directly within the manifest or file entry.
+3. **Compatibility**: Reuse the existing bulk-export manifest format so that clients familiar with the specification can parse and process manifests without structural changes.
 
 ---
 
-## 2 Technical Approach
+## 2. High‑Level Workflow
 
-### 2.1 Content Encryption
+1. **Generate CEK**: For each NDJSON file, generate a fresh symmetric key (the CEK) for `crypto_secretstream_xchacha20poly1305`. Optionally **gzip the NDJSON** file before encryption (recommended). You may generate one CEK per manifest and reuse it across all files.
 
-* **Primitive:** `crypto_secretstream_xchacha20poly1305` (libsodium)
-* **Header H:** 24 bytes at file offset 0.
-* **Chunk size C:** fixed-size chunks of plaintext per `push()`; final chunk may be shorter than C.
-* **Chunk format:** each encrypted chunk = plaintext (≤ C) **+ 17-byte overhead** (1-byte stream tag + 16-byte Poly1305 MAC). Clients verify each chunk’s tag and MAC as they stream.
+2. **Encrypt Data**: Stream‑encrypt each file using libsodium’s SecretStream API, producing a public header + ciphertext chunks.
 
-### 2.2 Key, Header, Chunk-Size, Media Packaging & Versioning
+3. **Wrap CEK in JWE**: Create a compact JWE whose payload contains the CEK and related parameters, encrypted under the client’s public key (`use": "enc"`) from their registered JWK set.
 
-**CEK lifecycle:**
+4. **Publish Manifest**: Include the JWE as an `extension` on each file entry (or at top‑level for per‑batch keys) in the bulk‑export manifest.
 
-* **SHOULD** generate a fresh, unique CEK per file for maximum compartmentalization.
-* **MAY** reuse the same CEK across all files in a single manifest to simplify key management; in that case, publish one JWE extension at the top-level manifest instead of per-file.
+5. **Decrypt**: Client fetches the manifest, locates the JWE, unwraps the CEK with their private key, then streams and decrypts each file.
 
-| Element           | Conveyed in JWE payload field | Description                                            |
-| ----------------- | ----------------------------- | ------------------------------------------------------ |
-| `v`               | `"v"`                         | Protocol version (e.g. `"0.5"                         |
-| 32-byte key **K** | `"k"`                         | Base64-url-encoded CEK                                 |
-| Chunk size **C**  | `"chunk"`                     | Bytes of plaintext per chunk (omit ⇒ default 1 MiB)    |
-| Cipher identifier | `"cipher"`                    | `"secretstream_xchacha20poly1305"`                     |
-| Media type        | `"content_type"`              | e.g. `"application/fhir+ndjson"`                       |
-| Content encoding  | `"content_encoding"`          | omit ⇒ none; `"gzip"` ⇒ gzip applied before encryption |
+---
 
-#### JWE Protected Header
+## 3. Content Encryption Details
 
-| Parameter | Description                                                                                           |
-| --------- | ----------------------------------------------------------------------------------------------------- |
-| `alg`     | Key management algorithm (`RSA-OAEP-256` or `ECDH-ES+A256KW`)                                         |
-| `enc`     | Content encryption algorithm (`A256GCM`)                                                              |
-| `kid`     | Key ID matching a JWK in the client's JWKS                                                            |
-| `cty`     | Media type of the JWE payload (`application/json`)                                                    |
-| `epk`     | Ephemeral public key for ECDH-ES (per RFC 7518 §4.6.1). MUST be included if `alg` is `ECDH-ES+A256KW` |
+* **Algorithm**: `crypto_secretstream_xchacha20poly1305` (libsodium)
+* **Header (H)**: 24 bytes at file start (public)
+* **Chunk Size (C)**: Default 1 MiB, adjustable via JWE payload
+* **Chunk Format**: Each chunk = up to C plaintext bytes + 17‑byte overhead (1‑byte tag + 16‑byte MAC); final tail = 17‑byte final‑tag.
 
-### 2.3 File Layout
+**File Structure**:
 
-```text
-offset    size                   description
-0         24                     header H (public)
-24        N × (C + 17)           full chunk(s): ciphertext of C plaintext bytes + 17-byte overhead (TAG_MESSAGE)
-...       ≤ C                    final body chunk: ciphertext of ≤ C plaintext bytes + 17-byte overhead
-...       17                     tail: TAG_FINAL (17-byte authentication tag)
+```
+offset    size        description
+0         24 B        header H (public)
+24        N×(C+17)    intermediate ciphertext chunks
+...       ≤ C+17      final ciphertext chunk
+...       17 B        final authentication tag
 ```
 
-Clients should:
+---
 
-1. Read 24 B for the header, then initialize via `crypto_secretstream_xchacha20poly1305_init_pull(header, K)`.
-2. **Loop**: while buffer ≥ (C+17):
+## 4. Conveying the CEK via JWE
 
-   1. take `block = buffer.slice(0, C+17)`, decrypt with `pull(state, block)`, write plaintext.
-   2. drop that slice.
-3. Once fewer than (C+17+17) bytes remain:
+### 4.1 JWE Payload (JSON)
 
-   1. `finalBody = buf.slice(0, buf.length - 17)`, decrypt and write if nonzero.
-   2. `tail = buf.slice(buf.length - 17)`, decrypt: verify `tag === TAG_FINAL`.
+The JWE plaintext (payload) holds parameters and keys:
+
+```json
+{
+  "v": "0.5",                            // Protocol version
+  "k": "<base64url‑encoded CEK>",     // Symmetric CEK
+  "chunk": 1048576,                      // Chunk size in bytes (optional)
+  "cipher": "secretstream_xchacha20poly1305",
+  "content_type": "application/fhir+ndjson",
+  "content_encoding": "gzip"           // Optional: gzip before encryption
+}
+```
+
+### 4.2 JWE Protected Header
+
+Use either RSA‑OAEP‑256 or ECDH‑ES+A256KW for key wrapping. The protected header contains:
+
+| Parameter | Description                                                      |
+| --------- | ---------------------------------------------------------------- |
+| `alg`     | Key management algorithm: `RSA-OAEP-256` or `ECDH-ES+A256KW`     |
+| `enc`     | Content encryption: `A256GCM`                                    |
+| `kid`     | Key ID matching the client’s registered JWK entry (`use":"enc"`) |
+| `cty`     | `application/json`                                               |
+| `epk`     | Ephemeral public key (for ECDH‑ES+A256KW)                        |
+
+The JWE is serialized in compact form and placed into the manifest’s `extension`.
 
 ---
 
-## 3 Manifest Carriage & Transport Security
+## 5. Manifest Extensions
 
-For **per-file CEKs**, each file entry gets its own extension:
+### 5.1 Per‑File CEK
+
+Add an `extension` to each file entry:
 
 ```json
 {
   "type": "Patient",
   "url": "https://cdn.example.com/patient_file_1.sxch",
   "extension": {
-    "http://argo.run/bulk-export-decryption-key": "<compact-JWE>"
+    "url": "http://argo.run/bulk-export-decryption-key",
+    "valueString": "<compact-JWE>"
   }
 }
 ```
 
-For **per-manifest CEKs** (CEK reuse), include a single top-level extension instead:
+### 5.2 Per‑Manifest CEK
+
+Reuse one CEK across all files; include JWE at the top level:
 
 ```json
 {
@@ -95,58 +107,62 @@ For **per-manifest CEKs** (CEK reuse), include a single top-level extension inst
   "request": "...",
   "requiresAccessToken": true,
   "extension": {
-    "http://argo.run/bulk-export-decryption-key": "<compact-JWE>"
+    "url": "http://argo.run/bulk-export-decryption-key",
+    "valueString": "<compact-JWE>"
   },
-  "output": [ ... ]
+  "output": [ /* file entries without per-file JWE */ ]
 }
 ```
 
-* **MUST** fetch manifests and encrypted blobs over **HTTPS/TLS** to protect metadata and ciphertext in transit.
+**Note**: Clients MUST use HTTPS/TLS to fetch both manifest and file blobs.
 
 ---
 
-## 4 JWKS Requirements
+## 6. JWKS Publishing
 
-Clients must publish keys with:
+Clients MUST publish an encryption key in their JWKS with fields:
 
-| Field | Value                                  |
-| ----- | -------------------------------------- |
-| `use` | `"enc"`                                |
-| `alg` | `"RSA-OAEP-256"` or `"ECDH-ES+A256KW"` |
-| `kid` | Unique key identifier                  |
+* `use`: `"enc"`
+* `alg`: `"RSA-OAEP-256"` or `"ECDH-ES+A256KW"`
+* `kid`: Unique identifier
 
-Servers select the first key whose `use==="enc"` and whose `alg` they support.
+Servers pick the first JWK matching `use":"enc"` and a supported `alg`.
 
 ---
 
-## 5 Compression Support
+## 7. Compression Support
 
-| JWE Field                   | Interpretation                                             |
-| --------------------------- | ---------------------------------------------------------- |
-| *(absent)*                  | No compression                                             |
-| `"content_encoding":"gzip"` | Plaintext was GZIP-compressed (RFC 1952) before encryption |
+Within the JWE payload, `content_encoding` indicates pre‑encryption compression:
 
-Clients **MUST** inspect the JWE’s `"content_encoding"` claim and apply the corresponding decompressor to the decrypted stream.
+* Absent ⇒ no compression
+* `"gzip"` ⇒ apply GZIP (RFC 1952) before encryption
+
+Clients MUST decompress after decryption if indicated.
+
+---
+
+## 8. Operational Notes
+
+* **Resuming**: Clients may resume downloads at chunk boundaries via HTTP Range requests.
 
 ---
 
-## 6 Security & Operational Notes
 
-* **Key Rotation:** Generate a fresh CEK per file or per export batch for forward secrecy.
-* **Resumption:** Clients may resume on chunk boundaries via HTTP Range.
+## 9. Reference Implementation
 
----
-## 7 Reference Implementation (TypeScript/Bun)
+See `./index.ts` for a minimal Bun‑based TypeScript reference using libsodium’s SecretStream API:
 
-For a minimal Bun‑based reference for streaming encryption and decryption using libsodium’s SecretStream API, see `./index.ts`(./index.ts).
-
-
-# Demo Output
-
-```
+```bash
 bun install
 bun index.ts
+```
 
+The demo output verifies encrypted file size, timings, and successful decryptions for various file sizes and compression settings.
+
+
+## Example Output
+
+```
 ------------------------------------------------------------------------------------------------------------
 | Test Case                               | Encrypted Size     | Enc Time (ms) | Dec Time (ms) | Status    |
 |-----------------------------------------|--------------------|---------------|---------------|-----------|
